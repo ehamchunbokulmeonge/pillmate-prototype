@@ -59,7 +59,7 @@ PillMate는 **OCR(광학 문자 인식) 기술**과 **방대한 의약품 데이
 
 | 약 추가 (OCR) | 메인 대시보드 | 약물 상세 정보 |
 | :---: | :---: | :---: |
-| \<img width="200" alt="약추가" src="https://github.com/user-attachments/assets/a21383d5-b59d-452f-bf53-d96939ffb59f" /\> | \<img width="200" alt="메인" "https://github.com/user-attachments/assets/fd725290-5676-41e5-bc4d-680c8d5808e9" /\> | \<img width="200" alt="약" src="https://github.com/user-attachments/assets/907ddce2-fd8e-4005-b397-968612370594" /\> |
+| <img width="200" alt="약추가" src="https://github.com/user-attachments/assets/a21383d5-b59d-452f-bf53-d96939ffb59f" /> | <img width="200" alt="메인" src="https://github.com/user-attachments/assets/fd725290-5676-41e5-bc4d-680c8d5808e9" /> | <img width="200" alt="약" src="https://github.com/user-attachments/assets/907ddce2-fd8e-4005-b397-968612370594" /> |
 -----
 
 ## 📚 3. 활용 데이터셋 (Data Sources)
