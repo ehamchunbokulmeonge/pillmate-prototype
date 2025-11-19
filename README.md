@@ -5,9 +5,8 @@
 PillMate는 사용자가 약 패키지를 스마트폰으로 촬영하면 AI가 약품명과 성분을 자동 인식하여 효능, 복용법, 주의사항을 분석해 주는 헬스케어 서비스입니다. 단순 기록을 넘어 중복 성분 및 병용 금기 약물을 사전에 탐지하여 다제약물 복용자의 안전한 약물 관리를 돕습니다.
 
 ---
-## 📑 프로젝트 문서 (Documentation)
-[\[애햄춘복울멍이\]PillMate기획서.pdf](https://github.com/user-attachments/files/23616378/PillMate.pdf)
----
+### 👇프로젝트 문서👇
+### [\[애햄춘복울멍이\]PillMate기획서.pdf 바로가기](https://github.com/user-attachments/files/23616378/PillMate.pdf)
 
 -----
 
