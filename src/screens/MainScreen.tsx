@@ -221,14 +221,6 @@ const MainScreen = () => {
                     {nextSchedule.dose_count}정 복용
                   </Text>
                 </View>
-                <TouchableOpacity style={styles.viewAllButton}>
-                  <Text style={styles.viewAllText}>전체보기</Text>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color={Colors.gray1}
-                  />
-                </TouchableOpacity>
               </View>
             ) : (
               <View style={styles.completedContainer}>
