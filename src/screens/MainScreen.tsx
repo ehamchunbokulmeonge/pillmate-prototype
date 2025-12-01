@@ -98,15 +98,17 @@ const MainScreen = () => {
         // dose_time이 "08:00:00" 형식인 경우 처리
         const timeString = schedule.dose_time;
         console.log(`원본 dose_time: ${timeString}`);
-        
+
         // HH:MM:SS 형식에서 시간과 분 추출
-        const timeParts = timeString.split(':');
+        const timeParts = timeString.split(":");
         const hours = parseInt(timeParts[0], 10);
         const minutes = parseInt(timeParts[1], 10);
         const scheduleMinutes = hours * 60 + minutes;
-        
+
         console.log(
-          `스케줄: ${schedule.medicine_name}, 시간: ${hours}:${minutes} (${scheduleMinutes}분), 차이: ${
+          `스케줄: ${
+            schedule.medicine_name
+          }, 시간: ${hours}:${minutes} (${scheduleMinutes}분), 차이: ${
             scheduleMinutes - currentTime
           }분`
         );
@@ -137,7 +139,7 @@ const MainScreen = () => {
 
   const formatTime = (timeString: string) => {
     // "08:00:00" 형식에서 HH:MM만 추출
-    const timeParts = timeString.split(':');
+    const timeParts = timeString.split(":");
     return `${timeParts[0]}:${timeParts[1]}`;
   };
 
