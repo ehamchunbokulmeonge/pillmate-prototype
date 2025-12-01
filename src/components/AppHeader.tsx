@@ -11,6 +11,7 @@ const HeaderContainer = styled.View<{ topInset: number }>`
   padding-bottom: 20px;
   padding-left: 16px;
   padding-right: 16px;
+  background-color: #fff;
 `;
 
 const LeftSection = styled.View`

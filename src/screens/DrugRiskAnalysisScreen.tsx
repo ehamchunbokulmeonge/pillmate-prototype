@@ -38,31 +38,45 @@ interface CommentSection {
 }
 
 interface DrugRiskAnalysisProps {
-  scannedMedication?: ScannedMedication;
-  overallRiskScore?: number;
-  riskLevel?: "high" | "medium" | "low";
-  riskItems?: RiskItem[];
-  warnings?: string[];
-  summary?: string;
-  sections?: CommentSection[];
+  data?: {
+    scannedMedication?: ScannedMedication;
+    overallRiskScore?: number;
+    riskLevel?: "high" | "medium" | "low";
+    riskItems?: RiskItem[];
+    warnings?: string[];
+    summary?: string;
+    sections?: CommentSection[];
+  };
 }
 
-const DrugRiskAnalysisScreen = ({
-  scannedMedication = {
-    name: "타이레놀 500mg",
-    ingredient: "아세트아미노펜",
-    amount: "500mg",
-  },
-  overallRiskScore = 8,
-  riskLevel = "high",
-  riskItems = [],
-  warnings = [],
-  summary = "",
-  sections = [],
-}: DrugRiskAnalysisProps = {}) => {
+const DrugRiskAnalysisScreen = ({ data }: DrugRiskAnalysisProps) => {
+  console.log("=== DrugRiskAnalysisScreen 렌더링 ===");
+  console.log("Received data:", JSON.stringify(data, null, 2));
+
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const maxScore = 10;
+
+  // 기본값 설정
+  const scannedMedication = data?.scannedMedication || {
+    name: "타이레놀 500mg",
+    ingredient: "아세트아미노펜",
+    amount: "500mg",
+  };
+  const overallRiskScore = data?.overallRiskScore ?? 8;
+  const riskLevel = data?.riskLevel || "high";
+  const riskItems = data?.riskItems || [];
+  const warnings = data?.warnings || [];
+  const summary = data?.summary || "";
+  const sections = data?.sections || [];
+
+  console.log("사용할 데이터:", {
+    scannedMedication,
+    overallRiskScore,
+    riskLevel,
+    riskItemsCount: riskItems.length,
+    warningsCount: warnings.length,
+  });
 
   const handleCancel = () => {
     router.push("/camera");
@@ -99,7 +113,7 @@ const DrugRiskAnalysisScreen = ({
 
       const data = await response.json();
       Alert.alert("성공", "약이 성공적으로 등록되었습니다.", [
-        { text: "확인", onPress: () => router.push("/") },
+        { text: "확인", onPress: () => router.push("/medicine") },
       ]);
     } catch (error) {
       Alert.alert(
