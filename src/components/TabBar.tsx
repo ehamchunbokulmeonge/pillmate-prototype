@@ -12,8 +12,8 @@ const TabBarContainer = styled.View<{ bottomInset: number }>`
   height: ${(props) => 74 + props.bottomInset}px;
   padding-top: 16px;
   padding-bottom: ${(props) => 12 + props.bottomInset}px;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding-left: 40px;
+  padding-right: 40px;
   gap: 8px;
 `;
 
@@ -91,23 +91,6 @@ export default function TabBar() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  shadowContainer: {
-    backgroundColor: "#fff",
-    ...Platform.select({
-      ios: {
-        shadowColor: "rgba(155, 155, 155, 0.2)",
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 1,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
-  },
-});
 
 const styles = StyleSheet.create({
   shadowContainer: {
