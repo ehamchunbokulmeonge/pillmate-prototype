@@ -16,61 +16,103 @@ import { Colors } from "../constants/Color";
 import { api } from "../services/api";
 
 export default function OnboardingScreen() {
+  console.log("=== OnboardingScreen 렌더링 ===");
+
   const insets = useSafeAreaInsets();
   const [conditions, setConditions] = useState<string[]>([""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  console.log("현재 conditions:", conditions);
+  console.log("isSubmitting:", isSubmitting);
+
   const addCondition = () => {
-    setConditions([...conditions, ""]);
+    console.log("=== 지병 추가 버튼 클릭 ===");
+    console.log("이전 conditions:", conditions);
+    const newConditions = [...conditions, ""];
+    console.log("새로운 conditions:", newConditions);
+    setConditions(newConditions);
   };
 
   const removeCondition = (index: number) => {
+    console.log("=== 지병 삭제 버튼 클릭 ===");
+    console.log("삭제할 index:", index);
+    console.log("이전 conditions:", conditions);
+
     if (conditions.length > 1) {
       const newConditions = conditions.filter((_, i) => i !== index);
+      console.log("새로운 conditions:", newConditions);
       setConditions(newConditions);
+    } else {
+      console.log("최소 1개 이상 유지해야 하므로 삭제 불가");
     }
   };
 
   const updateCondition = (index: number, value: string) => {
+    console.log("=== 지병 입력 변경 ===");
+    console.log("index:", index);
+    console.log("입력 값:", value);
+
     const newConditions = [...conditions];
     newConditions[index] = value;
+    console.log("업데이트된 conditions:", newConditions);
     setConditions(newConditions);
   };
 
   const handleSubmit = async () => {
+    console.log("=== 완료 버튼 클릭 ===");
+    console.log("현재 conditions:", conditions);
+
     // 빈 문자열 제거
     const filteredConditions = conditions.filter((c) => c.trim() !== "");
+    console.log("필터링된 conditions:", filteredConditions);
 
     if (filteredConditions.length === 0) {
+      console.log("지병 정보가 없어서 알림 표시");
       Alert.alert("알림", "최소 1개 이상의 지병 정보를 입력해주세요.");
       return;
     }
 
     setIsSubmitting(true);
+    console.log("API 호출 시작...");
+
     try {
       await api.submitMedicalConditions(filteredConditions);
+      console.log("API 호출 성공");
       Alert.alert("성공", "지병 정보가 저장되었습니다.", [
         {
           text: "확인",
-          onPress: () => router.replace("/"),
+          onPress: () => {
+            console.log("메인 화면으로 이동");
+            router.replace("/");
+          },
         },
       ]);
     } catch (error) {
+      console.error("API 호출 실패:", error);
       Alert.alert(
         "오류",
         error instanceof Error ? error.message : "저장에 실패했습니다."
       );
     } finally {
       setIsSubmitting(false);
+      console.log("제출 완료");
     }
   };
 
   const handleSkip = () => {
+    console.log("=== 건너뛰기 버튼 클릭 ===");
     Alert.alert("확인", "지병 정보를 입력하지 않고 건너뛰시겠습니까?", [
-      { text: "취소", style: "cancel" },
+      {
+        text: "취소",
+        style: "cancel",
+        onPress: () => console.log("건너뛰기 취소"),
+      },
       {
         text: "건너뛰기",
-        onPress: () => router.replace("/"),
+        onPress: () => {
+          console.log("메인 화면으로 이동 (건너뛰기)");
+          router.replace("/");
+        },
       },
     ]);
   };

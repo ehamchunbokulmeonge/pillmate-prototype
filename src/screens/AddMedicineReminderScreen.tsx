@@ -19,6 +19,7 @@ import { Colors } from "../constants/Color";
 import { api } from "../services/api";
 
 interface AddMedicineReminderScreenProps {
+  medicineId?: string;
   medicineName?: string;
   medicineIngredient?: string;
   medicineAmount?: string;
@@ -26,6 +27,7 @@ interface AddMedicineReminderScreenProps {
 }
 
 const AddMedicineReminderScreen = ({
+  medicineId,
   medicineName = "",
   medicineIngredient = "",
   medicineAmount = "",
@@ -84,19 +86,27 @@ const AddMedicineReminderScreen = ({
     console.log("등록 프로세스 시작");
 
     try {
-      // 1. 약물 추가
-      const medicineData = {
-        name,
-        ingredient,
-        amount,
-        times,
-        count,
-        duration,
-      };
+      let medicineIdToUse: number;
 
-      console.log("약물 등록 중:", medicineData);
-      const addedMedicine = await api.addMedicine(medicineData);
-      console.log("약물 등록 완료:", addedMedicine);
+      // 1. 약물 추가 (medicineId가 없을 때만)
+      if (medicineId) {
+        console.log("이미 등록된 약물 ID 사용:", medicineId);
+        medicineIdToUse = parseInt(medicineId, 10);
+      } else {
+        const medicineData = {
+          name,
+          ingredient,
+          amount,
+          times,
+          count,
+          duration,
+        };
+
+        console.log("약물 등록 중:", medicineData);
+        const addedMedicine = await api.addMedicine(medicineData);
+        console.log("약물 등록 완료:", addedMedicine);
+        medicineIdToUse = addedMedicine.id;
+      }
 
       // 2. 시작 날짜와 종료 날짜 계산
       const today = new Date();
@@ -108,7 +118,7 @@ const AddMedicineReminderScreen = ({
       // 3. 각 복용 시간마다 스케줄 등록
       for (const time of times) {
         const scheduleData = {
-          medicine_id: addedMedicine.id,
+          medicine_id: medicineIdToUse,
           medicine_name: name,
           dose_count: count,
           dose_time: `${time}:00`, // "HH:MM:SS" 형식으로 변환

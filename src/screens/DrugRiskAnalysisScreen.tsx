@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -74,65 +75,100 @@ const DrugRiskAnalysisScreen = ({
 
   const fetchMedicineDetail = async () => {
     if (!medicineId) return;
-    
+
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/v1/medicines/${medicineId}`);
-      
+      const apiUrl = `${API_BASE_URL}/api/v1/medicines/${medicineId}`;
+
+      console.log("=== 약물 상세 조회 API 요청 ===");
+      console.log("API URL:", apiUrl);
+      console.log("Medicine ID:", medicineId);
+
+      const response = await fetch(apiUrl);
+
+      console.log("응답 상태:", response.status, response.statusText);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error("에러 응답:", errorText);
         throw new Error("약물 상세 조회 실패");
       }
-      
+
       const detail = await response.json();
       console.log("=== 약물 상세 조회 응답 ===");
       console.log("전체 detail:", JSON.stringify(detail, null, 2));
+      console.log("detail의 모든 키:", Object.keys(detail));
+      console.log("scan_report 존재 여부:", !!detail.scan_report);
       console.log("scan_report 타입:", typeof detail.scan_report);
       console.log("scan_report 내용:", detail.scan_report);
-      
+
       // scan_report가 있으면 그 내용을 사용
       if (detail.scan_report) {
         let reportData;
         try {
-          reportData = typeof detail.scan_report === 'string' 
-            ? JSON.parse(detail.scan_report) 
-            : detail.scan_report;
-          
+          reportData =
+            typeof detail.scan_report === "string"
+              ? JSON.parse(detail.scan_report)
+              : detail.scan_report;
+
           console.log("=== 파싱된 scan_report ===");
-          console.log("reportData:", JSON.stringify(reportData, null, 2));
+          console.log("reportData 전체:", JSON.stringify(reportData, null, 2));
+          console.log("reportData의 모든 키:", Object.keys(reportData));
+
+          // 가능한 모든 필드명 확인
           console.log("overallRiskScore:", reportData.overallRiskScore);
+          console.log("risk_score:", reportData.risk_score);
           console.log("riskLevel:", reportData.riskLevel);
+          console.log("risk_level:", reportData.risk_level);
           console.log("riskItems:", reportData.riskItems);
+          console.log("interactions:", reportData.interactions);
           console.log("warnings:", reportData.warnings);
+          console.log("summary:", reportData.summary);
+          console.log("sections:", reportData.sections);
         } catch (parseError) {
           console.error("scan_report 파싱 에러:", parseError);
           reportData = {};
         }
-        
+
         // API 응답 필드명을 화면에서 사용하는 필드명으로 매핑
         const mergedData = {
-          ...reportData,
-          // 필드명 매핑
-          overallRiskScore: reportData.risk_score ?? reportData.overallRiskScore ?? 0,
-          riskLevel: reportData.risk_level || reportData.riskLevel || "low",
-          riskItems: reportData.interactions || reportData.riskItems || [],
-          warnings: reportData.warnings || [],
-          summary: reportData.summary || "",
-          sections: reportData.sections || [],
-          recommendations: reportData.recommendations || [],
-          scannedMedication: reportData.scannedMedication || {
+          scannedMedication: {
             name: detail.name,
             ingredient: detail.ingredient,
             amount: detail.amount,
-          }
+          },
+          overallRiskScore:
+            reportData.overallRiskScore ?? reportData.risk_score ?? 0,
+          riskLevel: reportData.riskLevel || reportData.risk_level || "low",
+          riskItems: reportData.riskItems || reportData.interactions || [],
+          warnings: reportData.warnings || [],
+          summary: reportData.summary || "",
+          sections: reportData.sections || [],
         };
-        
+
         console.log("=== 최종 병합된 데이터 ===");
-        console.log(JSON.stringify(mergedData, null, 2));
-        
+        console.log("overallRiskScore:", mergedData.overallRiskScore);
+        console.log("riskLevel:", mergedData.riskLevel);
+        console.log("riskItems 길이:", mergedData.riskItems.length);
+        console.log("warnings 길이:", mergedData.warnings.length);
+        console.log("sections 길이:", mergedData.sections.length);
+
         setMedicineDetail(mergedData);
       } else {
-        console.log("scan_report 없음");
-        setMedicineDetail(detail);
+        console.log("scan_report 없음 - 기본 데이터 사용");
+        setMedicineDetail({
+          scannedMedication: {
+            name: detail.name,
+            ingredient: detail.ingredient,
+            amount: detail.amount,
+          },
+          overallRiskScore: 0,
+          riskLevel: "low",
+          riskItems: [],
+          warnings: [],
+          summary: "",
+          sections: [],
+        });
       }
     } catch (error) {
       console.error("약물 상세 조회 에러:", error);
@@ -169,92 +205,84 @@ const DrugRiskAnalysisScreen = ({
     router.push("/camera");
   };
 
-  const handleAddMedicine = () => {
+  const handleAddMedicine = async () => {
     if (isLoading) return;
 
-    // 약 등록 페이지로 이동 (스캔 결과 전달)
-    router.push({
-      pathname: "/add-medicine-reminder",
-      params: {
-        medicineName: scannedMedication.name,
-        medicineIngredient: scannedMedication.ingredient,
-        medicineAmount: scannedMedication.amount,
-        scanData: JSON.stringify({
+    setIsLoading(true);
+    try {
+      const requestBody = {
+        name: scannedMedication.name,
+        ingredient: scannedMedication.ingredient,
+        amount: scannedMedication.amount,
+        scan_report: {
           overallRiskScore,
           riskLevel,
           riskItems,
           warnings,
           summary,
           sections,
-          scannedMedication,
-        }),
-      },
-    });
+        },
+      };
+
+      console.log("=== 약 등록 API 요청 시작 ===");
+      console.log("API URL:", `${API_BASE_URL}/api/v1/medicines/`);
+      console.log("요청 본문:", JSON.stringify(requestBody, null, 2));
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/medicines/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log("응답 상태:", response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("에러 응답:", errorText);
+        throw new Error("약 등록에 실패했습니다.");
+      }
+
+      const data = await response.json();
+      console.log("응답 데이터:", JSON.stringify(data, null, 2));
+      console.log("=== 약 등록 API 완료 ===");
+
+      // 약 등록 성공 후 복용 알림 설정 페이지로 이동
+      router.push({
+        pathname: "/add-medicine-reminder",
+        params: {
+          medicineId: data.id,
+          medicineName: scannedMedication.name,
+          medicineIngredient: scannedMedication.ingredient,
+          medicineAmount: scannedMedication.amount,
+        },
+      });
+    } catch (error) {
+      console.error("약 등록 에러:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "약 등록 중 오류가 발생했습니다."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
   const needsConsultation = overallRiskScore >= 7;
 
-  // 더미 데이터 (props가 없을 때 사용)
-  const defaultRiskItems: RiskItem[] = [
-    {
-      id: "1",
-      type: "duplicate",
-      severity: "high",
-      title: "성분 중복",
-      description: "아세트아미노펜 성분이 2개 이상의 약물에 포함되어 있습니다",
-      percentage: 85,
-    },
-    {
-      id: "2",
-      type: "interaction",
-      severity: "high",
-      title: "상호작용 위험",
-      description: "이부프로펜과 아스피린 병용 시 위 점막 손상 가능",
-      percentage: 75,
-    },
-    {
-      id: "3",
-      type: "timing",
-      severity: "medium",
-      title: "복용 시간 충돌",
-      description: "3개의 약물이 동일한 시간대에 복용 예정입니다",
-      percentage: 60,
-    },
-  ];
+  // 데이터가 실제로 있는지 확인
+  const hasRealData =
+    riskItems.length > 0 ||
+    warnings.length > 0 ||
+    summary ||
+    sections.length > 0;
 
-  const defaultWarnings = [
-    "현재 복용 중인 약 중 '아세트아미노펜' 성분이 중복되어 간 독성 위험이 있습니다.",
-    "이부프로펜과 아스피린 병용은 위 점막 손상 가능성이 있습니다.",
-  ];
-
-  const defaultSummary =
-    "현재 복용 중인 약물들의 성분을 분석한 결과, 아세트아미노펜 성분이 중복되어 있어 간 손상 위험이 있습니다.";
-
-  const defaultSections: CommentSection[] = [
-    {
-      icon: "time",
-      title: "권장 복용 방법",
-      content:
-        "• 타이레놀은 아침 8시에 복용\n• 이부프로펜이 포함된 약은 최소 6시간 간격을 두고 오후 2시 이후 복용\n• 하루 아세트아미노펜 총 섭취량이 4000mg을 넘지 않도록 주의",
-    },
-    {
-      icon: "alert-circle",
-      title: "주의사항",
-      content:
-        "• 공복 복용 시 위장 장애가 발생할 수 있으니 식후 30분 이내 복용 권장\n• 음주 시 간 손상 위험이 증가하므로 복용 기간 중 금주 필요\n• 3일 이상 증상이 지속되면 복용을 중단하고 의사와 상담하세요",
-    },
-    {
-      icon: "swap-horizontal",
-      title: "대체 방안",
-      content:
-        "성분 중복을 피하고 싶다면 아세트아미노펜이 없는 소염진통제로 대체하거나, 약사와 상담하여 용량 조절을 고려해보세요.",
-    },
-  ];
-
-  // 실제 사용할 데이터 (props 우선, 없으면 더미 데이터)
-  const displayRiskItems = riskItems.length > 0 ? riskItems : defaultRiskItems;
-  const displayWarnings = warnings.length > 0 ? warnings : defaultWarnings;
-  const displaySummary = summary || defaultSummary;
-  const displaySections = sections.length > 0 ? sections : defaultSections;
+  // 실제 사용할 데이터
+  const displayRiskItems = riskItems;
+  const displayWarnings = warnings;
+  const displaySummary = summary;
+  const displaySections = sections;
 
   const getRiskColor = (level: "high" | "medium" | "low"): [string, string] => {
     switch (level) {
@@ -319,6 +347,18 @@ const DrugRiskAnalysisScreen = ({
       </Text>
     );
   };
+
+  // 로딩 중일 때
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.second} />
+          <Text style={styles.loadingText}>약물 정보를 불러오는 중...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -398,122 +438,167 @@ const DrugRiskAnalysisScreen = ({
         </LinearGradient>
 
         {/* 주의사항 섹션 */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="medical-outline" size={24} color={Colors.second} />
-            <Text style={styles.sectionTitle}>약물 상호작용 경고</Text>
-          </View>
-
-          <View style={styles.warningContainer}>
-            {displayWarnings.map((message, index) => (
-              <View key={index} style={styles.warningItem}>
-                <View style={styles.warningNumber}>
-                  <Text style={styles.warningNumberText}>{index + 1}</Text>
-                </View>
-                <Text style={styles.warningText}>{message}</Text>
+        {hasRealData ? (
+          <>
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Ionicons
+                  name="medical-outline"
+                  size={24}
+                  color={Colors.second}
+                />
+                <Text style={styles.sectionTitle}>약물 상호작용 경고</Text>
               </View>
-            ))}
-          </View>
-        </View>
 
-        {/* 위험 상세 리스트 */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="list" size={24} color={Colors.second} />
-            <Text style={styles.sectionTitle}>위험 항목 상세</Text>
-          </View>
-
-          {displayRiskItems.map((item) => (
-            <View key={item.id} style={styles.riskCard}>
-              <View style={styles.riskCardHeader}>
-                <View style={styles.riskCardTitleContainer}>
-                  <View
-                    style={[
-                      styles.riskIconContainer,
-                      {
-                        backgroundColor: `${getSeverityColor(item.severity)}20`,
-                      },
-                    ]}
-                  >
-                    <Ionicons
-                      name={getTypeIcon(item.type)}
-                      size={20}
-                      color={getSeverityColor(item.severity)}
-                    />
+              <View style={styles.warningContainer}>
+                {displayWarnings.map((message, index) => (
+                  <View key={index} style={styles.warningItem}>
+                    <View style={styles.warningNumber}>
+                      <Text style={styles.warningNumberText}>{index + 1}</Text>
+                    </View>
+                    <Text style={styles.warningText}>{message}</Text>
                   </View>
-                  <View style={styles.riskCardTitleText}>
-                    <Text style={styles.riskCardTitle}>{item.title}</Text>
-                    <Text
-                      style={[
-                        styles.severityBadge,
-                        { color: getSeverityColor(item.severity) },
-                      ]}
-                    >
-                      {item.severity === "high"
-                        ? "위험도: 높음"
-                        : item.severity === "medium"
-                        ? "위험도: 보통"
-                        : "위험도: 낮음"}
+                ))}
+              </View>
+            </View>
+
+            {/* 위험 상세 리스트 */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="list" size={24} color={Colors.second} />
+                <Text style={styles.sectionTitle}>위험 항목 상세</Text>
+              </View>
+
+              {displayRiskItems.map((item) => (
+                <View key={item.id} style={styles.riskCard}>
+                  <View style={styles.riskCardHeader}>
+                    <View style={styles.riskCardTitleContainer}>
+                      <View
+                        style={[
+                          styles.riskIconContainer,
+                          {
+                            backgroundColor: `${getSeverityColor(
+                              item.severity
+                            )}20`,
+                          },
+                        ]}
+                      >
+                        <Ionicons
+                          name={getTypeIcon(item.type)}
+                          size={20}
+                          color={getSeverityColor(item.severity)}
+                        />
+                      </View>
+                      <View style={styles.riskCardTitleText}>
+                        <Text style={styles.riskCardTitle}>{item.title}</Text>
+                        <Text
+                          style={[
+                            styles.severityBadge,
+                            { color: getSeverityColor(item.severity) },
+                          ]}
+                        >
+                          {item.severity === "high"
+                            ? "위험도: 높음"
+                            : item.severity === "medium"
+                            ? "위험도: 보통"
+                            : "위험도: 낮음"}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.percentageText}>
+                      {item.percentage}%
                     </Text>
                   </View>
+
+                  <Text style={styles.riskCardDescription}>
+                    {item.description}
+                  </Text>
+
+                  {/* 진행률 바 */}
+                  <View style={styles.progressBar}>
+                    <View
+                      style={[
+                        styles.progressBarFill,
+                        {
+                          width: `${item.percentage}%`,
+                          backgroundColor: getSeverityColor(item.severity),
+                        },
+                      ]}
+                    />
+                  </View>
                 </View>
-                <Text style={styles.percentageText}>{item.percentage}%</Text>
-              </View>
-
-              <Text style={styles.riskCardDescription}>{item.description}</Text>
-
-              {/* 진행률 바 */}
-              <View style={styles.progressBar}>
-                <View
-                  style={[
-                    styles.progressBarFill,
-                    {
-                      width: `${item.percentage}%`,
-                      backgroundColor: getSeverityColor(item.severity),
-                    },
-                  ]}
+              ))}
+            </View>
+          </>
+        ) : (
+          // 데이터가 없을 때 안전 메시지
+          <View style={styles.section}>
+            <View style={styles.safeMessageCard}>
+              <View style={styles.safeMessageIconContainer}>
+                <Ionicons
+                  name="shield-checkmark"
+                  size={60}
+                  color={Colors.success}
                 />
               </View>
-            </View>
-          ))}
-        </View>
-
-        {/* 전문가 소견 섹션 */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="document-text" size={24} color={Colors.second} />
-            <Text style={styles.sectionTitle}>AI 약사 코멘트</Text>
-          </View>
-
-          <View style={styles.aiCommentCard}>
-            <View style={styles.aiCommentHeader}>
-              <View style={styles.aiIconBadge}>
-                <Ionicons name="medical" size={20} color={Colors.second} />
-              </View>
-              <Text style={styles.aiCommentTitle}>복용 가이드</Text>
-            </View>
-
-            <Text style={styles.aiSummaryText}>
-              {renderTextWithBold(displaySummary)}
-            </Text>
-
-            {displaySections.map((section, index) => (
-              <View key={index} style={styles.aiSection}>
-                <View style={styles.aiSectionHeader}>
-                  <Ionicons
-                    name={section.icon as any}
-                    size={20}
-                    color={Colors.second}
-                  />
-                  <Text style={styles.aiSectionTitle}>{section.title}</Text>
-                </View>
-                <Text style={styles.aiSectionContent}>
-                  {renderTextWithBold(section.content)}
+              <Text style={styles.safeMessageTitle}>안전합니다</Text>
+              <Text style={styles.safeMessageText}>
+                현재 복용 중인 약물이 없으므로{"\n"}
+                중복 성분이나 약물 상호작용의 위험은 없습니다.
+              </Text>
+              <View style={styles.safeMessageTip}>
+                <Ionicons
+                  name="information-circle-outline"
+                  size={20}
+                  color={Colors.second}
+                />
+                <Text style={styles.safeMessageTipText}>
+                  이 약을 등록하면 향후 다른 약과의 상호작용을 분석할 수
+                  있습니다.
                 </Text>
               </View>
-            ))}
+            </View>
           </View>
-        </View>
+        )}
+
+        {/* 전문가 소견 섹션 */}
+        {hasRealData && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="document-text" size={24} color={Colors.second} />
+              <Text style={styles.sectionTitle}>AI 약사 코멘트</Text>
+            </View>
+
+            <View style={styles.aiCommentCard}>
+              <View style={styles.aiCommentHeader}>
+                <View style={styles.aiIconBadge}>
+                  <Ionicons name="medical" size={20} color={Colors.second} />
+                </View>
+                <Text style={styles.aiCommentTitle}>복용 가이드</Text>
+              </View>
+
+              <Text style={styles.aiSummaryText}>
+                {renderTextWithBold(displaySummary)}
+              </Text>
+
+              {displaySections.map((section, index) => (
+                <View key={index} style={styles.aiSection}>
+                  <View style={styles.aiSectionHeader}>
+                    <Ionicons
+                      name={section.icon as any}
+                      size={20}
+                      color={Colors.second}
+                    />
+                    <Text style={styles.aiSectionTitle}>{section.title}</Text>
+                  </View>
+                  <Text style={styles.aiSectionContent}>
+                    {renderTextWithBold(section.content)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* 버튼 영역 (약 페이지에서 온 경우 숨김) */}
         {!isFromMedicinePage && (
@@ -900,6 +985,58 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Colors.gray4,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: Colors.gray1,
+  },
+  safeMessageCard: {
+    backgroundColor: Colors.white1,
+    borderRadius: 20,
+    padding: 40,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  safeMessageIconContainer: {
+    marginBottom: 20,
+  },
+  safeMessageTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: Colors.success,
+    marginBottom: 12,
+  },
+  safeMessageText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: Colors.gray1,
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  safeMessageTip: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: Colors.white2,
+    padding: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  safeMessageTipText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    color: Colors.gray1,
   },
 });
 

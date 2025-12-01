@@ -2,16 +2,23 @@ import AddMedicineReminderScreen from "@/screens/AddMedicineReminderScreen";
 import { useLocalSearchParams } from "expo-router";
 
 export default function AddMedicineReminder() {
-  const { medicineName, medicineIngredient, medicineAmount, scanData } =
-    useLocalSearchParams<{
-      medicineName?: string;
-      medicineIngredient?: string;
-      medicineAmount?: string;
-      scanData?: string;
-    }>();
+  const {
+    medicineId,
+    medicineName,
+    medicineIngredient,
+    medicineAmount,
+    scanData,
+  } = useLocalSearchParams<{
+    medicineId?: string;
+    medicineName?: string;
+    medicineIngredient?: string;
+    medicineAmount?: string;
+    scanData?: string;
+  }>();
 
   return (
     <AddMedicineReminderScreen
+      medicineId={medicineId}
       medicineName={medicineName}
       medicineIngredient={medicineIngredient}
       medicineAmount={medicineAmount}

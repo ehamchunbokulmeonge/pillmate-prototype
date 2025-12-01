@@ -16,6 +16,7 @@ export default function RootLayout() {
     "/add-medicine-reminder",
     "/my-medicines-analysis",
     "/chat",
+    "/chat-room",
   ].includes(pathname);
 
   return (

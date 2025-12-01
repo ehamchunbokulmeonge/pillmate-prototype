@@ -13,8 +13,7 @@ import {
 } from "react-native";
 import { Colors } from "../constants/Color";
 
-const API_BASE_URL =
-  Constants.expoConfig?.extra?.apiBaseUrl;
+const API_BASE_URL = Constants.expoConfig?.extra?.apiBaseUrl;
 
 interface Medicine {
   id: number;
@@ -218,7 +217,21 @@ const MainScreen = () => {
           </View>
 
           <View style={styles.scheduleCard}>
-            {nextSchedule ? (
+            {schedules.length === 0 ? (
+              <View style={styles.emptyScheduleContainer}>
+                <Ionicons
+                  name="calendar-outline"
+                  size={64}
+                  color={Colors.gray3}
+                />
+                <Text style={styles.emptyScheduleTitle}>
+                  등록된 약이 없어요
+                </Text>
+                <Text style={styles.emptyScheduleSubtitle}>
+                  약을 촬영하고 복용 일정을 등록해보세요
+                </Text>
+              </View>
+            ) : nextSchedule ? (
               <View style={styles.nextScheduleContent}>
                 <View style={styles.scheduleIconContainer}>
                   <Ionicons name="alarm" size={32} color={Colors.second} />
@@ -491,6 +504,22 @@ const styles = StyleSheet.create({
   completedSubtitle: {
     fontSize: 14,
     color: Colors.gray1,
+  },
+  emptyScheduleContainer: {
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  emptyScheduleTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: Colors.black2,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyScheduleSubtitle: {
+    fontSize: 14,
+    color: Colors.gray1,
+    textAlign: "center",
   },
   scheduleProgress: {
     marginBottom: 20,

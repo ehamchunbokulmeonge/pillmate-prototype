@@ -1,8 +1,7 @@
 import Constants from "expo-constants";
 
 const API_BASE_URL =
-  Constants.expoConfig?.extra?.apiBaseUrl ||
-  "https://cottage-sentence-assign-abc.trycloudflare.com";
+  Constants.expoConfig?.extra?.apiBaseUrl;
 
 export interface Medicine {
   id: string;
@@ -29,7 +28,7 @@ export const api = {
     const response = await fetch(
       `${API_BASE_URL}/api/v1/users/medical-conditions`,
       {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
