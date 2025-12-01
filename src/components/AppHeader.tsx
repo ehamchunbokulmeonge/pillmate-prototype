@@ -9,10 +9,8 @@ const HeaderContainer = styled.View<{ topInset: number }>`
   justify-content: space-between;
   padding-top: ${(props) => props.topInset + 20}px;
   padding-bottom: 20px;
-  padding-left: 20px;
-  padding-right: 20px;
-  border-bottom-width: 1px;
-  border-bottom-color: #c0c0c0;
+  padding-left: 16px;
+  padding-right: 16px;
 `;
 
 const LeftSection = styled.View`
@@ -42,7 +40,7 @@ export default function AppHeader() {
     <HeaderContainer topInset={insets.top}>
       <LeftSection>
         <LogoContainer>
-          <LogoSvg width={32} height={33} />
+          <LogoSvg width={30} height={25} />
         </LogoContainer>
         <LogoText>PillMate</LogoText>
       </LeftSection>
