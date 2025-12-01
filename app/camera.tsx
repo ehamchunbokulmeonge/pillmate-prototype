@@ -65,6 +65,11 @@ export default function CameraScreen() {
       }
 
       // API 호출
+      console.log("=== 약물 스캔 API 요청 시작 ===");
+      console.log("API URL:", `${API_BASE_URL}/api/v1/analysis/scan`);
+      console.log("User ID:", USER_ID);
+      console.log("Image base64 length:", photo.base64?.length || 0);
+
       const response = await fetch(`${API_BASE_URL}/api/v1/analysis/scan`, {
         method: "POST",
         headers: {
@@ -76,19 +81,28 @@ export default function CameraScreen() {
         }),
       });
 
+      console.log("Response status:", response.status);
+      console.log("Response ok:", response.ok);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error("서버 에러 응답:", errorText);
         throw new Error("서버 응답 오류");
       }
 
       const result = await response.json();
+      console.log("=== API 응답 결과 ===");
+      console.log("Result:", JSON.stringify(result, null, 2));
 
       // 결과 화면으로 이동
+      console.log("결과 화면으로 이동 시작");
       router.push({
         pathname: "/drug-risk-analysis",
         params: {
           data: JSON.stringify(result),
         },
       });
+      console.log("결과 화면 이동 완료");
     } catch (error) {
       console.error("Error:", error);
       Alert.alert("오류", "약물 분석에 실패했습니다. 다시 시도해주세요.", [
@@ -124,7 +138,7 @@ export default function CameraScreen() {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.back()}
+            onPress={() => router.push("/")}
           >
             <Ionicons name="arrow-back" size={24} color={Colors.white1} />
           </TouchableOpacity>

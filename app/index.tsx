@@ -1,10 +1,14 @@
-import PageLayout from "@/constants/PageLayout";
+import MainScreen from "@/screens/MainScreen";
+import AppHeader from "@/components/AppHeader";
+import TabBar from "@/components/TabBar";
 import { View } from "react-native";
 
-export default function HomeScreen() {
+export default function Index() {
   return (
-    <PageLayout>
-      <View style={{ flex: 1, backgroundColor: "#FFFFFF" }} />
-    </PageLayout>
+    <View style={{ flex: 1 }}>
+      <AppHeader />
+      <MainScreen />
+      <TabBar />
+    </View>
   );
 }
