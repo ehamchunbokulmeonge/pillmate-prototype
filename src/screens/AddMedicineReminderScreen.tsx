@@ -180,15 +180,33 @@ const AddMedicineReminderScreen = ({
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.content}>
+          {/* 안내 카드 */}
+          <View style={styles.infoCard}>
+            <View style={styles.infoIconContainer}>
+              <Ionicons name="information-circle" size={24} color={Colors.second} />
+            </View>
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoTitle}>복용 알림 설정</Text>
+              <Text style={styles.infoDescription}>
+                약 정보와 복용 시간을 입력하면{"\n"}
+                정해진 시간에 알림을 받을 수 있어요
+              </Text>
+            </View>
+          </View>
+
           {/* 약 이름 */}
           <View style={styles.section}>
-            <Text style={styles.label}>약 이름</Text>
+            <View style={styles.labelContainer}>
+              <Ionicons name="medical" size={20} color={Colors.second} />
+              <Text style={styles.label}>약 이름</Text>
+            </View>
             <View style={styles.inputContainer}>
               <TextInput
                 style={styles.textInput}
                 value={name}
                 onChangeText={setName}
                 placeholder="약 이름을 입력하세요"
+                placeholderTextColor={Colors.gray3}
               />
               <View style={styles.iconContainer}>
                 <HardDrivesSvg width={32} height={32} />
@@ -200,50 +218,88 @@ const AddMedicineReminderScreen = ({
           <View style={styles.row}>
             {/* 약 개수 */}
             <View style={styles.halfSection}>
-              <Text style={styles.label}>약 개수</Text>
+              <View style={styles.labelContainer}>
+                <Ionicons name="analytics" size={18} color={Colors.second} />
+                <Text style={styles.label}>약 개수</Text>
+              </View>
               <TouchableOpacity
                 style={styles.counterContainer}
                 onPress={() => setShowCountPicker(true)}
               >
+                <View style={styles.counterIconWrapper}>
+                  <Ionicons name="remove-circle-outline" size={28} color={Colors.gray3} />
+                </View>
                 <View style={styles.counterContent}>
                   <Text style={styles.counterValue}>{count}</Text>
                   <Text style={styles.counterUnit}>개</Text>
                 </View>
-                <Arrow1Svg width={10} height={10} />
+                <View style={styles.counterIconWrapper}>
+                  <Ionicons name="add-circle-outline" size={28} color={Colors.second} />
+                </View>
               </TouchableOpacity>
             </View>
 
             {/* 복용 기간 */}
             <View style={styles.halfSection}>
-              <Text style={styles.label}>복용 기간</Text>
+              <View style={styles.labelContainer}>
+                <Ionicons name="calendar" size={18} color={Colors.second} />
+                <Text style={styles.label}>복용 기간</Text>
+              </View>
               <TouchableOpacity
                 style={styles.counterContainer}
                 onPress={() => setShowDurationPicker(true)}
               >
+                <View style={styles.counterIconWrapper}>
+                  <Ionicons name="remove-circle-outline" size={28} color={Colors.gray3} />
+                </View>
                 <View style={styles.counterContent}>
                   <Text style={styles.counterValue}>{duration}</Text>
                   <Text style={styles.counterUnit}>일</Text>
                 </View>
-                <Arrow1Svg width={10} height={10} />
+                <View style={styles.counterIconWrapper}>
+                  <Ionicons name="add-circle-outline" size={28} color={Colors.second} />
+                </View>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* 시간 */}
           <View style={styles.section}>
-            <Text style={styles.label}>시간</Text>
+            <View style={styles.labelContainer}>
+              <Ionicons name="alarm" size={20} color={Colors.second} />
+              <Text style={styles.label}>복용 시간</Text>
+              <View style={styles.timeBadge}>
+                <Text style={styles.timeBadgeText}>{times.length}회</Text>
+              </View>
+            </View>
             {times.map((time, index) => (
               <View key={index} style={styles.timeContainer}>
-                <RingSvg width={25} height={28} />
-                <TouchableOpacity onPress={() => handleTimePress(index)}>
-                  <Text style={styles.timeText}>{time}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.addTimeButton}
-                  onPress={() => handleAddTimeButton(index)}
-                >
-                  <PlusSvg width={14} height={14} />
-                </TouchableOpacity>
+                <View style={styles.timeLeftSection}>
+                  <View style={styles.timeIconContainer}>
+                    <RingSvg width={25} height={28} />
+                  </View>
+                  <View style={styles.timeInfoContainer}>
+                    <Text style={styles.timeLabel}>{index + 1}회차</Text>
+                    <TouchableOpacity 
+                      style={styles.timeValueContainer}
+                      onPress={() => handleTimePress(index)}
+                    >
+                      <Text style={styles.timeText}>{time}</Text>
+                      <Ionicons name="chevron-down" size={20} color={Colors.gray2} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {times.length > 1 && (
+                  <TouchableOpacity
+                    style={styles.removeTimeButton}
+                    onPress={() => {
+                      const newTimes = times.filter((_, i) => i !== index);
+                      setTimes(newTimes);
+                    }}
+                  >
+                    <Ionicons name="trash-outline" size={20} color={Colors.error} />
+                  </TouchableOpacity>
+                )}
               </View>
             ))}
           </View>
@@ -253,8 +309,31 @@ const AddMedicineReminderScreen = ({
             style={styles.addTimeTextButton}
             onPress={handleAddTime}
           >
-            <Text style={styles.addTimeTextButtonText}>시간 추가</Text>
+            <Ionicons name="add-circle" size={20} color={Colors.second} />
+            <Text style={styles.addTimeTextButtonText}>복용 시간 추가</Text>
           </TouchableOpacity>
+
+          {/* 요약 카드 */}
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryTitle}>등록 요약</Text>
+            <View style={styles.summaryDivider} />
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>약물명</Text>
+              <Text style={styles.summaryValue}>{name || "미입력"}</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>1회 복용량</Text>
+              <Text style={styles.summaryValue}>{count}개</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>하루 복용 횟수</Text>
+              <Text style={styles.summaryValue}>{times.length}회</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>복용 기간</Text>
+              <Text style={styles.summaryValue}>{duration}일</Text>
+            </View>
+          </View>
         </View>
       </ScrollView>
 
@@ -435,15 +514,63 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    gap: 15,
+    gap: 20,
+  },
+  infoCard: {
+    flexDirection: "row",
+    backgroundColor: "rgba(255, 98, 73, 0.08)",
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255, 98, 73, 0.2)",
+  },
+  infoIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.white1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  infoTextContainer: {
+    flex: 1,
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: Colors.black2,
+    marginBottom: 4,
+  },
+  infoDescription: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: Colors.gray1,
   },
   section: {
-    gap: 8,
+    gap: 12,
+  },
+  labelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   label: {
     fontSize: 16,
     fontWeight: "700",
     color: Colors.black2,
+  },
+  timeBadge: {
+    backgroundColor: Colors.second,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginLeft: 8,
+  },
+  timeBadgeText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: Colors.white1,
   },
   inputContainer: {
     flexDirection: "row",
@@ -479,22 +606,31 @@ const styles = StyleSheet.create({
   },
   counterContainer: {
     flexDirection: "row",
-    height: 60,
+    height: 70,
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: Colors.white1,
+    borderWidth: 2,
+    borderColor: "rgba(255, 98, 73, 0.2)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  counterIconWrapper: {
+    width: 32,
+    height: 32,
     justifyContent: "center",
     alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: Colors.white1,
-    borderWidth: 1,
-    borderColor: "#CFCFCF",
   },
   counterContent: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: 127,
+    alignItems: "baseline",
+    gap: 4,
   },
   counterValue: {
     fontSize: 24,
@@ -510,38 +646,108 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    height: 80,
-    paddingHorizontal: 25,
-    borderRadius: 10,
-    backgroundColor: "rgba(255, 66, 66, 0.1)",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: Colors.white1,
+    borderWidth: 2,
+    borderColor: "rgba(255, 98, 73, 0.2)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  timeLeftSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    flex: 1,
+  },
+  timeIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "rgba(255, 98, 73, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  timeInfoContainer: {
+    flex: 1,
+  },
+  timeLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: Colors.gray1,
+    marginBottom: 4,
+  },
+  timeValueContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   timeText: {
-    fontSize: 40,
+    fontSize: 28,
     fontWeight: "700",
     color: Colors.black2,
   },
-  addTimeButton: {
-    width: 30,
-    height: 30,
+  removeTimeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(255, 59, 48, 0.1)",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 15,
-    backgroundColor: "rgba(255, 66, 66, 0.4)",
   },
   addTimeTextButton: {
-    minHeight: 44,
+    flexDirection: "row",
+    minHeight: 56,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingVertical: 16,
+    borderRadius: 12,
     backgroundColor: Colors.white1,
-    borderWidth: 1,
-    borderColor: "rgba(255, 98, 73, 0.3)",
-    marginBottom: 8,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderColor: Colors.second,
+    gap: 8,
   },
   addTimeTextButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: Colors.second,
+  },
+  summaryCard: {
+    backgroundColor: "rgba(255, 98, 73, 0.05)",
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255, 98, 73, 0.15)",
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: Colors.black2,
+    marginBottom: 12,
+  },
+  summaryDivider: {
+    height: 1,
+    backgroundColor: "rgba(255, 98, 73, 0.15)",
+    marginBottom: 16,
+  },
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  summaryLabel: {
     fontSize: 14,
+    color: Colors.gray1,
+  },
+  summaryValue: {
+    fontSize: 16,
     fontWeight: "700",
     color: Colors.black2,
   },
@@ -551,8 +757,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 10,
+    borderRadius: 12,
     backgroundColor: Colors.second,
+    shadowColor: Colors.second,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   registerButtonText: {
     fontSize: 18,
