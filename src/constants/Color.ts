@@ -12,4 +12,9 @@ export const Colors = {
   gray2: "#9B9B9B",
   gray3: "#CFCFCF",
   gray4: "#F3F4F6",
+
+  info: "#2F80ED",
+  success: "#27AE60",
+  warning: "#E2B93B",
+  error: "#EB5757",
 } as const;
