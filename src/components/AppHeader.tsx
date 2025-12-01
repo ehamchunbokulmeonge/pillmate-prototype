@@ -1,3 +1,4 @@
+import ListSvg from "@/assets/icons/List.svg";
 import LogoSvg from "@/assets/icons/logo.svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styled from "styled-components/native";
@@ -5,12 +6,18 @@ import styled from "styled-components/native";
 const HeaderContainer = styled.View<{ topInset: number }>`
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   padding-top: ${(props) => props.topInset + 20}px;
   padding-bottom: 20px;
   padding-left: 20px;
   padding-right: 20px;
   border-bottom-width: 1px;
   border-bottom-color: #c0c0c0;
+`;
+
+const LeftSection = styled.View`
+  flex-direction: row;
+  align-items: center;
 `;
 
 const LogoContainer = styled.View`
@@ -24,15 +31,24 @@ const LogoText = styled.Text`
   margin-left: 10px;
 `;
 
+const ListButton = styled.TouchableOpacity`
+  padding: 4px;
+`;
+
 export default function AppHeader() {
   const insets = useSafeAreaInsets();
 
   return (
     <HeaderContainer topInset={insets.top}>
-      <LogoContainer>
-        <LogoSvg width={32} height={33} />
-      </LogoContainer>
-      <LogoText>PillMate</LogoText>
+      <LeftSection>
+        <LogoContainer>
+          <LogoSvg width={32} height={33} />
+        </LogoContainer>
+        <LogoText>PillMate</LogoText>
+      </LeftSection>
+      <ListButton>
+        <ListSvg width={24} height={24} />
+      </ListButton>
     </HeaderContainer>
   );
 }
