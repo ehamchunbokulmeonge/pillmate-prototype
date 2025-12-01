@@ -1,5 +1,6 @@
 import ListSvg from "@/assets/icons/List.svg";
 import LogoSvg from "@/assets/icons/logo.svg";
+import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 
@@ -40,6 +41,11 @@ const ListButton = styled.TouchableOpacity`
 
 export default function AppHeader() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const handleMenuPress = () => {
+    router.push("/onboarding");
+  };
 
   return (
     <HeaderContainer topInset={insets.top}>
@@ -49,7 +55,7 @@ export default function AppHeader() {
         </LogoContainer>
         <LogoText>PillMate</LogoText>
       </LeftSection>
-      <ListButton>
+      <ListButton onPress={handleMenuPress}>
         <ListSvg width={24} height={24} />
       </ListButton>
     </HeaderContainer>
