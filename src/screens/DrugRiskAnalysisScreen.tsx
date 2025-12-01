@@ -1,8 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Colors } from "../constants/Color";
+
+const API_BASE_URL = Constants.expoConfig?.extra?.apiBaseUrl;
 
 interface RiskItem {
   id: string;
@@ -48,7 +60,58 @@ const DrugRiskAnalysisScreen = ({
   summary = "",
   sections = [],
 }: DrugRiskAnalysisProps = {}) => {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const maxScore = 10;
+
+  const handleCancel = () => {
+    router.push("/camera");
+  };
+
+  const handleAddMedicine = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/medicines/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: scannedMedication.name,
+          ingredient: scannedMedication.ingredient,
+          amount: scannedMedication.amount,
+          scan_report: {
+            overallRiskScore,
+            riskLevel,
+            riskItems,
+            warnings,
+            summary,
+            sections,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("약 등록에 실패했습니다.");
+      }
+
+      const data = await response.json();
+      Alert.alert("성공", "약이 성공적으로 등록되었습니다.", [
+        { text: "확인", onPress: () => router.push("/") },
+      ]);
+    } catch (error) {
+      Alert.alert(
+        "오류",
+        error instanceof Error
+          ? error.message
+          : "약 등록 중 오류가 발생했습니다."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const needsConsultation = overallRiskScore >= 7;
 
   // 더미 데이터 (props가 없을 때 사용)
@@ -371,6 +434,20 @@ const DrugRiskAnalysisScreen = ({
               </View>
             ))}
           </View>
+        </View>
+
+        {/* 버튼 영역 */}
+        <View style={styles.buttonSection}>
+          <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+            <Text style={styles.cancelButtonText}>취소하기</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={handleAddMedicine}
+          >
+            <Text style={styles.addButtonText}>내 약 추가하기</Text>
+          </TouchableOpacity>
         </View>
 
         {/* 하단 여백 */}
@@ -702,6 +779,40 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     color: Colors.gray1,
+  },
+  buttonSection: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    marginTop: 20,
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: Colors.white1,
+    borderWidth: 1.5,
+    borderColor: Colors.gray2,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.gray1,
+  },
+  addButton: {
+    flex: 1,
+    backgroundColor: Colors.second,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.white1,
   },
   bottomSpacer: {
     height: 40,
