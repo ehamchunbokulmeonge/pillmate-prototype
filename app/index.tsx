@@ -1,6 +1,12 @@
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
-import { Link } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
+import { Link } from "expo-router";
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function HomeScreen() {
   return (
@@ -11,15 +17,15 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.menuContainer}>
-        <Link href="/drug-risk-analysis" asChild>
+        <Link href="/camera" asChild>
           <TouchableOpacity style={styles.menuItem}>
             <View style={styles.iconContainer}>
-              <Ionicons name="alert-circle" size={32} color="#FF6249" />
+              <Ionicons name="camera" size={32} color="#FF6249" />
             </View>
             <View style={styles.menuTextContainer}>
-              <Text style={styles.menuTitle}>약물 위험 분석</Text>
+              <Text style={styles.menuTitle}>약물 촬영</Text>
               <Text style={styles.menuDescription}>
-                종합 안전성 평가
+                약물 사진을 찍어 위험성 분석
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={24} color="#BDC3C7" />
@@ -33,35 +39,35 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: "#F8F9FA",
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 30,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#2C3E50',
+    fontWeight: "bold",
+    color: "#2C3E50",
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
-    color: '#7F8C8D',
+    color: "#7F8C8D",
   },
   menuContainer: {
     padding: 20,
   },
   menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
     padding: 20,
     borderRadius: 16,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -71,9 +77,9 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#FFE8E5',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#FFE8E5",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
   },
   menuTextContainer: {
@@ -81,12 +87,12 @@ const styles = StyleSheet.create({
   },
   menuTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#2C3E50',
+    fontWeight: "600",
+    color: "#2C3E50",
     marginBottom: 4,
   },
   menuDescription: {
     fontSize: 14,
-    color: '#7F8C8D',
+    color: "#7F8C8D",
   },
 });

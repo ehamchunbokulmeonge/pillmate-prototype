@@ -1,19 +1,13 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  SafeAreaView,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Colors } from "../constants/Color";
 
 interface RiskItem {
   id: string;
-  type: 'duplicate' | 'interaction' | 'timing';
-  severity: 'high' | 'medium' | 'low';
+  type: "duplicate" | "interaction" | "timing";
+  severity: "high" | "medium" | "low";
   title: string;
   description: string;
   percentage: number;
@@ -25,26 +19,34 @@ interface ScannedMedication {
   amount: string;
 }
 
+interface CommentSection {
+  icon: string;
+  title: string;
+  content: string;
+}
+
 interface DrugRiskAnalysisProps {
   scannedMedication?: ScannedMedication;
   overallRiskScore?: number;
-  riskLevel?: 'high' | 'medium' | 'low';
+  riskLevel?: "high" | "medium" | "low";
   riskItems?: RiskItem[];
   warnings?: string[];
-  aiPharmacistComment?: string;
+  summary?: string;
+  sections?: CommentSection[];
 }
 
 const DrugRiskAnalysisScreen = ({
   scannedMedication = {
-    name: '타이레놀 500mg',
-    ingredient: '아세트아미노펜',
-    amount: '500mg',
+    name: "타이레놀 500mg",
+    ingredient: "아세트아미노펜",
+    amount: "500mg",
   },
   overallRiskScore = 8,
-  riskLevel = 'high',
+  riskLevel = "high",
   riskItems = [],
   warnings = [],
-  aiPharmacistComment = '',
+  summary = "",
+  sections = [],
 }: DrugRiskAnalysisProps = {}) => {
   const maxScore = 10;
   const needsConsultation = overallRiskScore >= 7;
@@ -82,9 +84,35 @@ const DrugRiskAnalysisScreen = ({
     "이부프로펜과 아스피린 병용은 위 점막 손상 가능성이 있습니다.",
   ];
 
+  const defaultSummary =
+    "현재 복용 중인 약물들의 성분을 분석한 결과, 아세트아미노펜 성분이 중복되어 있어 간 손상 위험이 있습니다.";
+
+  const defaultSections: CommentSection[] = [
+    {
+      icon: "time",
+      title: "권장 복용 방법",
+      content:
+        "• 타이레놀은 아침 8시에 복용\n• 이부프로펜이 포함된 약은 최소 6시간 간격을 두고 오후 2시 이후 복용\n• 하루 아세트아미노펜 총 섭취량이 4000mg을 넘지 않도록 주의",
+    },
+    {
+      icon: "alert-circle",
+      title: "주의사항",
+      content:
+        "• 공복 복용 시 위장 장애가 발생할 수 있으니 식후 30분 이내 복용 권장\n• 음주 시 간 손상 위험이 증가하므로 복용 기간 중 금주 필요\n• 3일 이상 증상이 지속되면 복용을 중단하고 의사와 상담하세요",
+    },
+    {
+      icon: "swap-horizontal",
+      title: "대체 방안",
+      content:
+        "성분 중복을 피하고 싶다면 아세트아미노펜이 없는 소염진통제로 대체하거나, 약사와 상담하여 용량 조절을 고려해보세요.",
+    },
+  ];
+
   // 실제 사용할 데이터 (props 우선, 없으면 더미 데이터)
   const displayRiskItems = riskItems.length > 0 ? riskItems : defaultRiskItems;
   const displayWarnings = warnings.length > 0 ? warnings : defaultWarnings;
+  const displaySummary = summary || defaultSummary;
+  const displaySections = sections.length > 0 ? sections : defaultSections;
 
   const getRiskColor = (level: "high" | "medium" | "low"): [string, string] => {
     switch (level) {
@@ -128,6 +156,26 @@ const DrugRiskAnalysisScreen = ({
       case "low":
         return Colors.success;
     }
+  };
+
+  // **텍스트** 파싱하여 bold 처리
+  const renderTextWithBold = (text: string) => {
+    const parts = text.split(/\*\*(.*?)\*\*/g);
+    return (
+      <Text>
+        {parts.map((part, index) => {
+          // 홀수 인덱스는 bold 처리
+          if (index % 2 === 1) {
+            return (
+              <Text key={index} style={{ fontWeight: "bold" }}>
+                {part}
+              </Text>
+            );
+          }
+          return part;
+        })}
+      </Text>
+    );
   };
 
   return (
@@ -179,8 +227,8 @@ const DrugRiskAnalysisScreen = ({
                 {riskLevel === "high"
                   ? "높음"
                   : riskLevel === "medium"
-                    ? "보통"
-                    : "낮음"}
+                  ? "보통"
+                  : "낮음"}
               </Text>
             </View>
           </View>
@@ -210,11 +258,7 @@ const DrugRiskAnalysisScreen = ({
         {/* 주의사항 섹션 */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons
-              name="medical-outline"
-              size={24}
-              color={Colors.second}
-            />
+            <Ionicons name="medical-outline" size={24} color={Colors.second} />
             <Text style={styles.sectionTitle}>약물 상호작용 경고</Text>
           </View>
 
@@ -266,8 +310,8 @@ const DrugRiskAnalysisScreen = ({
                       {item.severity === "high"
                         ? "위험도: 높음"
                         : item.severity === "medium"
-                          ? "위험도: 보통"
-                          : "위험도: 낮음"}
+                        ? "위험도: 보통"
+                        : "위험도: 낮음"}
                     </Text>
                   </View>
                 </View>
@@ -306,44 +350,26 @@ const DrugRiskAnalysisScreen = ({
               </View>
               <Text style={styles.aiCommentTitle}>복용 가이드</Text>
             </View>
-            
+
             <Text style={styles.aiSummaryText}>
-              현재 복용 중인 약물들의 성분을 분석한 결과, 아세트아미노펜 성분이 중복되어 있어 간 손상 위험이 있습니다.
+              {renderTextWithBold(displaySummary)}
             </Text>
 
-            <View style={styles.aiSection}>
-              <View style={styles.aiSectionHeader}>
-                <Ionicons name="time" size={20} color={Colors.second} />
-                <Text style={styles.aiSectionTitle}>권장 복용 방법</Text>
+            {displaySections.map((section, index) => (
+              <View key={index} style={styles.aiSection}>
+                <View style={styles.aiSectionHeader}>
+                  <Ionicons
+                    name={section.icon as any}
+                    size={20}
+                    color={Colors.second}
+                  />
+                  <Text style={styles.aiSectionTitle}>{section.title}</Text>
+                </View>
+                <Text style={styles.aiSectionContent}>
+                  {renderTextWithBold(section.content)}
+                </Text>
               </View>
-              <Text style={styles.aiSectionContent}>
-                • 타이레놀은 아침 8시에 복용{'\n'}
-                • 이부프로펜이 포함된 약은 최소 6시간 간격을 두고 오후 2시 이후 복용{'\n'}
-                • 하루 아세트아미노펜 총 섭취량이 4000mg을 넘지 않도록 주의
-              </Text>
-            </View>
-
-            <View style={styles.aiSection}>
-              <View style={styles.aiSectionHeader}>
-                <Ionicons name="alert-circle" size={20} color={Colors.second} />
-                <Text style={styles.aiSectionTitle}>주의사항</Text>
-              </View>
-              <Text style={styles.aiSectionContent}>
-                • 공복 복용 시 위장 장애가 발생할 수 있으니 식후 30분 이내 복용 권장{'\n'}
-                • 음주 시 간 손상 위험이 증가하므로 복용 기간 중 금주 필요{'\n'}
-                • 3일 이상 증상이 지속되면 복용을 중단하고 의사와 상담하세요
-              </Text>
-            </View>
-
-            <View style={styles.aiSection}>
-              <View style={styles.aiSectionHeader}>
-                <Ionicons name="swap-horizontal" size={20} color={Colors.second} />
-                <Text style={styles.aiSectionTitle}>대체 방안</Text>
-              </View>
-              <Text style={styles.aiSectionContent}>
-                성분 중복을 피하고 싶다면 아세트아미노펜이 없는 소염진통제로 대체하거나, 약사와 상담하여 용량 조절을 고려해보세요.
-              </Text>
-            </View>
+            ))}
           </View>
         </View>
 
