@@ -4,7 +4,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -47,15 +46,23 @@ interface DrugRiskAnalysisProps {
     summary?: string;
     sections?: CommentSection[];
   };
+  medicineId?: string;
 }
 
-const DrugRiskAnalysisScreen = ({ data }: DrugRiskAnalysisProps) => {
+const DrugRiskAnalysisScreen = ({
+  data,
+  medicineId,
+}: DrugRiskAnalysisProps) => {
   console.log("=== DrugRiskAnalysisScreen 렌더링 ===");
   console.log("Received data:", JSON.stringify(data, null, 2));
+  console.log("MedicineId:", medicineId);
 
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const maxScore = 10;
+
+  // 약 페이지에서 온 경우 (medicineId가 있으면) 버튼 숨김
+  const isFromMedicinePage = !!medicineId;
 
   // 기본값 설정
   const scannedMedication = data?.scannedMedication || {
@@ -82,49 +89,27 @@ const DrugRiskAnalysisScreen = ({ data }: DrugRiskAnalysisProps) => {
     router.push("/camera");
   };
 
-  const handleAddMedicine = async () => {
+  const handleAddMedicine = () => {
     if (isLoading) return;
 
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/medicines/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: scannedMedication.name,
-          ingredient: scannedMedication.ingredient,
-          amount: scannedMedication.amount,
-          scan_report: {
-            overallRiskScore,
-            riskLevel,
-            riskItems,
-            warnings,
-            summary,
-            sections,
-          },
+    // 약 등록 페이지로 이동 (스캔 결과 전달)
+    router.push({
+      pathname: "/add-medicine-reminder",
+      params: {
+        medicineName: scannedMedication.name,
+        medicineIngredient: scannedMedication.ingredient,
+        medicineAmount: scannedMedication.amount,
+        scanData: JSON.stringify({
+          overallRiskScore,
+          riskLevel,
+          riskItems,
+          warnings,
+          summary,
+          sections,
+          scannedMedication,
         }),
-      });
-
-      if (!response.ok) {
-        throw new Error("약 등록에 실패했습니다.");
-      }
-
-      const data = await response.json();
-      Alert.alert("성공", "약이 성공적으로 등록되었습니다.", [
-        { text: "확인", onPress: () => router.push("/medicine") },
-      ]);
-    } catch (error) {
-      Alert.alert(
-        "오류",
-        error instanceof Error
-          ? error.message
-          : "약 등록 중 오류가 발생했습니다."
-      );
-    } finally {
-      setIsLoading(false);
-    }
+      },
+    });
   };
   const needsConsultation = overallRiskScore >= 7;
 
@@ -450,19 +435,24 @@ const DrugRiskAnalysisScreen = ({ data }: DrugRiskAnalysisProps) => {
           </View>
         </View>
 
-        {/* 버튼 영역 */}
-        <View style={styles.buttonSection}>
-          <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-            <Text style={styles.cancelButtonText}>취소하기</Text>
-          </TouchableOpacity>
+        {/* 버튼 영역 (약 페이지에서 온 경우 숨김) */}
+        {!isFromMedicinePage && (
+          <View style={styles.buttonSection}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={handleCancel}
+            >
+              <Text style={styles.cancelButtonText}>취소하기</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={handleAddMedicine}
-          >
-            <Text style={styles.addButtonText}>내 약 추가하기</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={handleAddMedicine}
+            >
+              <Text style={styles.addButtonText}>내 약 추가하기</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* 하단 여백 */}
         <View style={styles.bottomSpacer} />
