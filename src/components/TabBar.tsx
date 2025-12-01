@@ -108,3 +108,20 @@ const styles = StyleSheet.create({
     }),
   },
 });
+
+const styles = StyleSheet.create({
+  shadowContainer: {
+    backgroundColor: "#fff",
+    ...Platform.select({
+      ios: {
+        shadowColor: "rgba(155, 155, 155, 0.2)",
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 1,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+});
