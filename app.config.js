@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 module.exports = {
   expo: {
     name: "pillmate-app",
@@ -9,7 +11,7 @@ module.exports = {
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     extra: {
-      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3000',
+      apiBaseUrl: process.env.API_BASE_URL,
     },
     ios: {
       supportsTablet: true,

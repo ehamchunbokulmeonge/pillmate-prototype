@@ -14,7 +14,7 @@ import {
 import { Colors } from "../constants/Color";
 
 const API_BASE_URL =
-  Constants.expoConfig?.extra?.apiBaseUrl || "http://localhost:3000";
+  Constants.expoConfig?.extra?.apiBaseUrl;
 
 interface Medicine {
   id: number;
@@ -50,11 +50,24 @@ const MainScreen = () => {
       // 실제 API 호출
       const [scheduleResponse, medicineResponse] = await Promise.all([
         fetch(`${API_BASE_URL}/api/v1/schedules/today`),
-        fetch(`${API_BASE_URL}/api/v1/medicines/`),
+        fetch(`${API_BASE_URL}/api/v1/medicines`),
       ]);
 
       console.log("Schedule API 응답 상태:", scheduleResponse.status);
       console.log("Medicine API 응답 상태:", medicineResponse.status);
+
+      // 에러 응답 내용 확인
+      if (!scheduleResponse.ok) {
+        const errorText = await scheduleResponse.text();
+        console.error("Schedule API 에러 응답:", errorText);
+        throw new Error(`Schedule API failed: ${scheduleResponse.status}`);
+      }
+
+      if (!medicineResponse.ok) {
+        const errorText = await medicineResponse.text();
+        console.error("Medicine API 에러 응답:", errorText);
+        throw new Error(`Medicine API failed: ${medicineResponse.status}`);
+      }
 
       const scheduleData = await scheduleResponse.json();
       const medicineData = await medicineResponse.json();

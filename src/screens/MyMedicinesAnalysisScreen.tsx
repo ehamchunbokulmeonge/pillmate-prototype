@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import Constants from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -12,8 +12,17 @@ import {
   View,
 } from "react-native";
 import { Colors } from "../constants/Color";
+import { api } from "../services/api";
 
-const API_BASE_URL = Constants.expoConfig?.extra?.apiBaseUrl;
+interface Medicine {
+  id: string;
+  name: string;
+  ingredient: string;
+  amount: string;
+  times: string[];
+  count: number;
+  duration: number;
+}
 
 interface RiskItem {
   id: string;
@@ -24,176 +33,97 @@ interface RiskItem {
   percentage: number;
 }
 
-interface ScannedMedication {
-  name: string;
-  ingredient: string;
-  amount: string;
-}
-
 interface CommentSection {
   icon: string;
   title: string;
   content: string;
 }
 
-interface DrugRiskAnalysisProps {
-  data?: {
-    scannedMedication?: ScannedMedication;
-    overallRiskScore?: number;
-    riskLevel?: "high" | "medium" | "low";
-    riskItems?: RiskItem[];
-    warnings?: string[];
-    summary?: string;
-    sections?: CommentSection[];
-  };
-  medicineId?: string;
+interface MyMedicinesAnalysisProps {
+  newMedicine?: Medicine;
+  existingMedicines?: Medicine[];
+  overallRiskScore?: number;
+  riskLevel?: "high" | "medium" | "low";
+  riskItems?: RiskItem[];
+  warnings?: string[];
+  summary?: string;
+  sections?: CommentSection[];
+  newMedicineDataStr?: string;
+  scanDataStr?: string;
 }
 
-const DrugRiskAnalysisScreen = ({
-  data,
-  medicineId,
-}: DrugRiskAnalysisProps) => {
-  console.log("=== DrugRiskAnalysisScreen 렌더링 ===");
-  console.log("Received data:", JSON.stringify(data, null, 2));
-  console.log("MedicineId:", medicineId);
-
+const MyMedicinesAnalysisScreen = ({
+  newMedicine,
+  existingMedicines = [],
+  overallRiskScore = 6,
+  riskLevel = "medium",
+  riskItems = [],
+  warnings = [],
+  summary = "",
+  sections = [],
+  newMedicineDataStr,
+  scanDataStr,
+}: MyMedicinesAnalysisProps = {}) => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [medicineDetail, setMedicineDetail] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [parsedNewMedicine, setParsedNewMedicine] = useState<Medicine | null>(
+    null
+  );
+  const [parsedScanData, setParsedScanData] = useState<any>(null);
   const maxScore = 10;
+  const needsConsultation = displayOverallRiskScore >= 7;
 
-  // 약 페이지에서 온 경우 (medicineId가 있으면) 버튼 숨김
-  const isFromMedicinePage = !!medicineId;
-
-  // medicineId가 있으면 API 호출
-  React.useEffect(() => {
-    if (medicineId) {
-      fetchMedicineDetail();
-    }
-  }, [medicineId]);
-
-  const fetchMedicineDetail = async () => {
-    if (!medicineId) return;
-    
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/v1/medicines/${medicineId}`);
-      
-      if (!response.ok) {
-        throw new Error("약물 상세 조회 실패");
+  useEffect(() => {
+    if (newMedicineDataStr) {
+      try {
+        const parsed = JSON.parse(newMedicineDataStr);
+        setParsedNewMedicine(parsed);
+      } catch (error) {
+        console.error("Error parsing newMedicineData:", error);
       }
-      
-      const detail = await response.json();
-      console.log("=== 약물 상세 조회 응답 ===");
-      console.log("전체 detail:", JSON.stringify(detail, null, 2));
-      console.log("scan_report 타입:", typeof detail.scan_report);
-      console.log("scan_report 내용:", detail.scan_report);
-      
-      // scan_report가 있으면 그 내용을 사용
-      if (detail.scan_report) {
-        let reportData;
-        try {
-          reportData = typeof detail.scan_report === 'string' 
-            ? JSON.parse(detail.scan_report) 
-            : detail.scan_report;
-          
-          console.log("=== 파싱된 scan_report ===");
-          console.log("reportData:", JSON.stringify(reportData, null, 2));
-          console.log("overallRiskScore:", reportData.overallRiskScore);
-          console.log("riskLevel:", reportData.riskLevel);
-          console.log("riskItems:", reportData.riskItems);
-          console.log("warnings:", reportData.warnings);
-        } catch (parseError) {
-          console.error("scan_report 파싱 에러:", parseError);
-          reportData = {};
-        }
-        
-        // API 응답 필드명을 화면에서 사용하는 필드명으로 매핑
-        const mergedData = {
-          ...reportData,
-          // 필드명 매핑
-          overallRiskScore: reportData.risk_score ?? reportData.overallRiskScore ?? 0,
-          riskLevel: reportData.risk_level || reportData.riskLevel || "low",
-          riskItems: reportData.interactions || reportData.riskItems || [],
-          warnings: reportData.warnings || [],
-          summary: reportData.summary || "",
-          sections: reportData.sections || [],
-          recommendations: reportData.recommendations || [],
-          scannedMedication: reportData.scannedMedication || {
-            name: detail.name,
-            ingredient: detail.ingredient,
-            amount: detail.amount,
-          }
-        };
-        
-        console.log("=== 최종 병합된 데이터 ===");
-        console.log(JSON.stringify(mergedData, null, 2));
-        
-        setMedicineDetail(mergedData);
-      } else {
-        console.log("scan_report 없음");
-        setMedicineDetail(detail);
-      }
-    } catch (error) {
-      console.error("약물 상세 조회 에러:", error);
-    } finally {
-      setIsLoading(false);
     }
+    if (scanDataStr) {
+      try {
+        const parsed = JSON.parse(scanDataStr);
+        setParsedScanData(parsed);
+      } catch (error) {
+        console.error("Error parsing scanData:", error);
+      }
+    }
+  }, [newMedicineDataStr, scanDataStr]);
+
+  // 더미 데이터
+  const defaultNewMedicine: Medicine = {
+    id: "new-1",
+    name: "타이레놀 500mg",
+    ingredient: "아세트아미노펜",
+    amount: "500mg",
+    times: ["08:00", "14:00", "20:00"],
+    count: 3,
+    duration: 7,
   };
 
-  // medicineDetail이 있으면 그것을 사용, 없으면 data 사용
-  const displayData = medicineDetail || data;
+  const defaultExistingMedicines: Medicine[] = [
+    {
+      id: "1",
+      name: "이부프로펜 200mg",
+      ingredient: "이부프로펜",
+      amount: "200mg",
+      times: ["09:00", "21:00"],
+      count: 2,
+      duration: 5,
+    },
+    {
+      id: "2",
+      name: "아스피린 100mg",
+      ingredient: "아세틸살리실산",
+      amount: "100mg",
+      times: ["08:00"],
+      count: 1,
+      duration: 30,
+    },
+  ];
 
-  // 기본값 설정
-  const scannedMedication = displayData?.scannedMedication || {
-    name: displayData?.name || "",
-    ingredient: displayData?.ingredient || "",
-    amount: displayData?.amount || "",
-  };
-  const overallRiskScore = displayData?.overallRiskScore ?? 0;
-  const riskLevel = displayData?.riskLevel || "low";
-  const riskItems = displayData?.riskItems || [];
-  const warnings = displayData?.warnings || [];
-  const summary = displayData?.summary || "";
-  const sections = displayData?.sections || [];
-
-  console.log("사용할 데이터:", {
-    scannedMedication,
-    overallRiskScore,
-    riskLevel,
-    riskItemsCount: riskItems.length,
-    warningsCount: warnings.length,
-  });
-
-  const handleCancel = () => {
-    router.push("/camera");
-  };
-
-  const handleAddMedicine = () => {
-    if (isLoading) return;
-
-    // 약 등록 페이지로 이동 (스캔 결과 전달)
-    router.push({
-      pathname: "/add-medicine-reminder",
-      params: {
-        medicineName: scannedMedication.name,
-        medicineIngredient: scannedMedication.ingredient,
-        medicineAmount: scannedMedication.amount,
-        scanData: JSON.stringify({
-          overallRiskScore,
-          riskLevel,
-          riskItems,
-          warnings,
-          summary,
-          sections,
-          scannedMedication,
-        }),
-      },
-    });
-  };
-  const needsConsultation = overallRiskScore >= 7;
-
-  // 더미 데이터 (props가 없을 때 사용)
   const defaultRiskItems: RiskItem[] = [
     {
       id: "1",
@@ -250,11 +180,27 @@ const DrugRiskAnalysisScreen = ({
     },
   ];
 
-  // 실제 사용할 데이터 (props 우선, 없으면 더미 데이터)
-  const displayRiskItems = riskItems.length > 0 ? riskItems : defaultRiskItems;
-  const displayWarnings = warnings.length > 0 ? warnings : defaultWarnings;
-  const displaySummary = summary || defaultSummary;
-  const displaySections = sections.length > 0 ? sections : defaultSections;
+  // 실제 사용할 데이터
+  const displayNewMedicine =
+    parsedNewMedicine || newMedicine || defaultNewMedicine;
+  const displayExistingMedicines =
+    existingMedicines.length > 0 ? existingMedicines : defaultExistingMedicines;
+  const displayRiskItems =
+    parsedScanData?.riskItems || riskItems.length > 0
+      ? parsedScanData?.riskItems || riskItems
+      : defaultRiskItems;
+  const displayWarnings =
+    parsedScanData?.warnings || warnings.length > 0
+      ? parsedScanData?.warnings || warnings
+      : defaultWarnings;
+  const displaySummary = parsedScanData?.summary || summary || defaultSummary;
+  const displaySections =
+    parsedScanData?.sections || sections.length > 0
+      ? parsedScanData?.sections || sections
+      : defaultSections;
+  const displayOverallRiskScore =
+    parsedScanData?.overallRiskScore || overallRiskScore;
+  const displayRiskLevel = parsedScanData?.riskLevel || riskLevel;
 
   const getRiskColor = (level: "high" | "medium" | "low"): [string, string] => {
     switch (level) {
@@ -300,13 +246,11 @@ const DrugRiskAnalysisScreen = ({
     }
   };
 
-  // **텍스트** 파싱하여 bold 처리
   const renderTextWithBold = (text: string) => {
     const parts = text.split(/\*\*(.*?)\*\*/g);
     return (
       <Text>
         {parts.map((part, index) => {
-          // 홀수 인덱스는 bold 처리
           if (index % 2 === 1) {
             return (
               <Text key={index} style={{ fontWeight: "bold" }}>
@@ -320,55 +264,151 @@ const DrugRiskAnalysisScreen = ({
     );
   };
 
+  const handleCancel = () => {
+    Alert.alert("취소", "약 추가를 취소하시겠습니까?", [
+      { text: "아니오", style: "cancel" },
+      {
+        text: "예",
+        onPress: () => router.back(),
+      },
+    ]);
+  };
+
+  const handleAddMedicine = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await api.addMedicine({
+        name: displayNewMedicine.name,
+        ingredient: displayNewMedicine.ingredient,
+        amount: displayNewMedicine.amount,
+        times: displayNewMedicine.times,
+        count: displayNewMedicine.count,
+        duration: displayNewMedicine.duration,
+      });
+
+      Alert.alert("성공", "약이 성공적으로 추가되었습니다.", [
+        { text: "확인", onPress: () => router.push("/") },
+      ]);
+    } catch (error) {
+      Alert.alert(
+        "오류",
+        error instanceof Error
+          ? error.message
+          : "약 추가 중 오류가 발생했습니다."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* 헤더 */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>약물 위험 분석</Text>
+          <Text style={styles.headerTitle}>복용 중인 약</Text>
           <Text style={styles.headerSubtitle}>종합 안전성 평가</Text>
         </View>
 
-        {/* 촬영한 약물 정보 */}
+        {/* 추가할 약물 정보 (최상단) */}
         <View style={styles.scannedMedSection}>
-          <View style={styles.scannedMedCard}>
+          <View style={[styles.scannedMedCard, styles.newMedicineCard]}>
             <View style={styles.scannedMedHeader}>
-              <Ionicons name="camera" size={20} color="#FF6249" />
-              <Text style={styles.scannedMedLabel}>촬영한 약물</Text>
+              <Ionicons name="add-circle" size={20} color="#FF6249" />
+              <Text style={styles.scannedMedLabel}>추가할 약물</Text>
             </View>
-            <Text style={styles.scannedMedName}>{scannedMedication.name}</Text>
+            <Text style={styles.scannedMedName}>{displayNewMedicine.name}</Text>
             <View style={styles.scannedMedDetails}>
               <View style={styles.scannedMedDetailItem}>
                 <Text style={styles.scannedMedDetailLabel}>성분명</Text>
                 <Text style={styles.scannedMedDetailValue}>
-                  {scannedMedication.ingredient}
+                  {displayNewMedicine.ingredient}
                 </Text>
               </View>
               <View style={styles.scannedMedDetailItem}>
                 <Text style={styles.scannedMedDetailLabel}>함량</Text>
                 <Text style={styles.scannedMedDetailValue}>
-                  {scannedMedication.amount}
+                  {displayNewMedicine.amount}
                 </Text>
+              </View>
+            </View>
+            <View style={styles.medicineInfoRow}>
+              <View style={styles.medicineInfoItem}>
+                <Text style={styles.medicineInfoLabel}>복용 횟수</Text>
+                <Text style={styles.medicineInfoValue}>
+                  {displayNewMedicine.count}회/일
+                </Text>
+              </View>
+              <View style={styles.medicineInfoItem}>
+                <Text style={styles.medicineInfoLabel}>복용 기간</Text>
+                <Text style={styles.medicineInfoValue}>
+                  {displayNewMedicine.duration}일
+                </Text>
+              </View>
+            </View>
+            <View style={styles.timesContainer}>
+              <Text style={styles.timesLabel}>복용 시간</Text>
+              <View style={styles.timesChips}>
+                {displayNewMedicine.times.map((time, index) => (
+                  <View key={index} style={styles.timeChip}>
+                    <Text style={styles.timeChipText}>{time}</Text>
+                  </View>
+                ))}
               </View>
             </View>
           </View>
         </View>
 
+        {/* 기존 복용 약물 목록 */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="medical" size={24} color={Colors.second} />
+            <Text style={styles.sectionTitle}>기존 복용 약물</Text>
+          </View>
+
+          {displayExistingMedicines.map((medicine) => (
+            <View key={medicine.id} style={styles.existingMedicineCard}>
+              <Text style={styles.existingMedicineName}>{medicine.name}</Text>
+              <View style={styles.existingMedicineDetails}>
+                <Text style={styles.existingMedicineDetail}>
+                  {medicine.ingredient} • {medicine.amount}
+                </Text>
+                <Text style={styles.existingMedicineDetail}>
+                  {medicine.count}회/일 • {medicine.duration}일
+                </Text>
+              </View>
+              <View style={styles.existingTimesChips}>
+                {medicine.times.map((time, index) => (
+                  <View key={index} style={styles.existingTimeChip}>
+                    <Text style={styles.existingTimeChipText}>{time}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+
         {/* 전체 위험도 점수 카드 */}
         <LinearGradient
-          colors={getRiskColor(riskLevel)}
+          colors={getRiskColor(displayRiskLevel)}
           style={styles.scoreCard}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
           <View style={styles.scoreHeader}>
-            <Ionicons name={getRiskIcon(riskLevel)} size={40} color="white" />
+            <Ionicons
+              name={getRiskIcon(displayRiskLevel)}
+              size={40}
+              color="white"
+            />
             <View style={styles.scoreTextContainer}>
               <Text style={styles.scoreLabel}>전체 위험도</Text>
               <Text style={styles.riskLevelText}>
-                {riskLevel === "high"
+                {displayRiskLevel === "high"
                   ? "높음"
-                  : riskLevel === "medium"
+                  : displayRiskLevel === "medium"
                   ? "보통"
                   : "낮음"}
               </Text>
@@ -376,7 +416,7 @@ const DrugRiskAnalysisScreen = ({
           </View>
 
           <View style={styles.scoreMainContainer}>
-            <Text style={styles.scoreMain}>{overallRiskScore}</Text>
+            <Text style={styles.scoreMain}>{displayOverallRiskScore}</Text>
             <Text style={styles.scoreMax}>/ {maxScore}</Text>
           </View>
 
@@ -384,7 +424,7 @@ const DrugRiskAnalysisScreen = ({
             <View
               style={[
                 styles.scoreBarFill,
-                { width: `${(overallRiskScore / maxScore) * 100}%` },
+                { width: `${(displayOverallRiskScore / maxScore) * 100}%` },
               ]}
             />
           </View>
@@ -462,7 +502,6 @@ const DrugRiskAnalysisScreen = ({
 
               <Text style={styles.riskCardDescription}>{item.description}</Text>
 
-              {/* 진행률 바 */}
               <View style={styles.progressBar}>
                 <View
                   style={[
@@ -478,7 +517,7 @@ const DrugRiskAnalysisScreen = ({
           ))}
         </View>
 
-        {/* 전문가 소견 섹션 */}
+        {/* AI 약사 코멘트 */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Ionicons name="document-text" size={24} color={Colors.second} />
@@ -515,26 +554,27 @@ const DrugRiskAnalysisScreen = ({
           </View>
         </View>
 
-        {/* 버튼 영역 (약 페이지에서 온 경우 숨김) */}
-        {!isFromMedicinePage && (
-          <View style={styles.buttonSection}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={handleCancel}
-            >
-              <Text style={styles.cancelButtonText}>취소하기</Text>
-            </TouchableOpacity>
+        {/* 버튼 영역 */}
+        <View style={styles.buttonSection}>
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={handleCancel}
+            disabled={isSubmitting}
+          >
+            <Text style={styles.cancelButtonText}>취소하기</Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={handleAddMedicine}
-            >
-              <Text style={styles.addButtonText}>내 약 추가하기</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          <TouchableOpacity
+            style={[styles.addButton, isSubmitting && styles.addButtonDisabled]}
+            onPress={handleAddMedicine}
+            disabled={isSubmitting}
+          >
+            <Text style={styles.addButtonText}>
+              {isSubmitting ? "추가 중..." : "약 추가하기"}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-        {/* 하단 여백 */}
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </SafeAreaView>
@@ -583,6 +623,9 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  newMedicineCard: {
+    backgroundColor: "#FFF5F5",
+  },
   scannedMedHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -603,6 +646,7 @@ const styles = StyleSheet.create({
   scannedMedDetails: {
     flexDirection: "row",
     gap: 20,
+    marginBottom: 12,
   },
   scannedMedDetailItem: {
     flex: 1,
@@ -615,6 +659,101 @@ const styles = StyleSheet.create({
   scannedMedDetailValue: {
     fontSize: 15,
     fontWeight: "600",
+    color: Colors.gray1,
+  },
+  medicineInfoRow: {
+    flexDirection: "row",
+    gap: 20,
+    marginBottom: 12,
+  },
+  medicineInfoItem: {
+    flex: 1,
+  },
+  medicineInfoLabel: {
+    fontSize: 12,
+    color: Colors.gray2,
+    marginBottom: 4,
+  },
+  medicineInfoValue: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: Colors.gray1,
+  },
+  timesContainer: {
+    marginTop: 4,
+  },
+  timesLabel: {
+    fontSize: 12,
+    color: Colors.gray2,
+    marginBottom: 8,
+  },
+  timesChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  timeChip: {
+    backgroundColor: Colors.second,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  timeChipText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: Colors.white1,
+  },
+  section: {
+    marginBottom: 24,
+    paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: Colors.black2,
+    marginLeft: 8,
+  },
+  existingMedicineCard: {
+    backgroundColor: Colors.white1,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: Colors.gray3,
+  },
+  existingMedicineName: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: Colors.black2,
+    marginBottom: 8,
+  },
+  existingMedicineDetails: {
+    marginBottom: 8,
+  },
+  existingMedicineDetail: {
+    fontSize: 13,
+    color: Colors.gray2,
+    marginBottom: 4,
+  },
+  existingTimesChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  existingTimeChip: {
+    backgroundColor: Colors.gray3,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  existingTimeChipText: {
+    fontSize: 12,
+    fontWeight: "500",
     color: Colors.gray1,
   },
   scoreCard: {
@@ -688,21 +827,6 @@ const styles = StyleSheet.create({
     color: Colors.white1,
     fontWeight: "600",
     marginLeft: 6,
-  },
-  section: {
-    marginBottom: 24,
-    paddingHorizontal: 20,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: Colors.black2,
-    marginLeft: 8,
   },
   warningContainer: {
     backgroundColor: Colors.white1,
@@ -893,6 +1017,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  addButtonDisabled: {
+    backgroundColor: "#FFB19E",
+  },
   addButtonText: {
     fontSize: 16,
     fontWeight: "600",
@@ -903,4 +1030,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DrugRiskAnalysisScreen;
+export default MyMedicinesAnalysisScreen;
