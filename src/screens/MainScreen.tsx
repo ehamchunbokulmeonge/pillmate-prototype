@@ -95,13 +95,18 @@ const MainScreen = () => {
     // dose_time을 시간(분)으로 변환하여 현재 시간 이후의 가장 가까운 스케줄 찾기
     const upcomingSchedules = schedules
       .map((schedule) => {
-        const doseTime = new Date(schedule.dose_time);
-        const scheduleMinutes =
-          doseTime.getHours() * 60 + doseTime.getMinutes();
+        // dose_time이 "08:00:00" 형식인 경우 처리
+        const timeString = schedule.dose_time;
+        console.log(`원본 dose_time: ${timeString}`);
+        
+        // HH:MM:SS 형식에서 시간과 분 추출
+        const timeParts = timeString.split(':');
+        const hours = parseInt(timeParts[0], 10);
+        const minutes = parseInt(timeParts[1], 10);
+        const scheduleMinutes = hours * 60 + minutes;
+        
         console.log(
-          `스케줄: ${
-            schedule.medicine_name
-          }, 시간: ${doseTime.getHours()}:${doseTime.getMinutes()} (${scheduleMinutes}분), 차이: ${
+          `스케줄: ${schedule.medicine_name}, 시간: ${hours}:${minutes} (${scheduleMinutes}분), 차이: ${
             scheduleMinutes - currentTime
           }분`
         );
@@ -130,13 +135,10 @@ const MainScreen = () => {
     return nextSchedule;
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("ko-KR", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+  const formatTime = (timeString: string) => {
+    // "08:00:00" 형식에서 HH:MM만 추출
+    const timeParts = timeString.split(':');
+    return `${timeParts[0]}:${timeParts[1]}`;
   };
 
   const handleMedicinePress = async (medicineId: number) => {
