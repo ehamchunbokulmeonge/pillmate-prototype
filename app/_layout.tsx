@@ -1,38 +1,22 @@
+import { ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
-import { Colors } from '@/constants/colors';
+
 
 export const unstable_settings = {
-  initialRouteName: '(tabs)',
+  anchor: '(tabs)',
 };
 
 export default function RootLayout() {
+
   return (
-    <>
-      <Stack
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: Colors.white,
-          },
-          headerTintColor: Colors.textPrimary,
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      >
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+    <ThemeProvider value={undefined}>
+      <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen 
-          name="medication-detail" 
-          options={{ 
-            presentation: 'modal',
-            title: '약 상세정보',
-            headerShown: true,
-          }} 
-        />
+        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />
-    </>
+    </ThemeProvider>
   );
 }

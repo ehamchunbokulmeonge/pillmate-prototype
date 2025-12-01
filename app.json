@@ -1,19 +1,15 @@
 {
   "expo": {
-    "name": "pillmate-prototype",
-    "slug": "pillmate-prototype",
+    "name": "pillmate-app",
+    "slug": "pillmate-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "pillmateprototype",
+    "scheme": "pillmateapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
-      "infoPlist": {
-        "NSCameraUsageDescription": "약 포장지나 낱알을 촬영하여 약 정보를 인식합니다.",
-        "NSPhotoLibraryUsageDescription": "약 포장지나 낱알 사진을 선택하여 약 정보를 인식합니다."
-      }
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
@@ -23,12 +19,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "permissions": [
-        "CAMERA",
-        "READ_MEDIA_IMAGES",
-        "READ_EXTERNAL_STORAGE"
-      ]
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
@@ -36,18 +27,6 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "약 포장지나 낱알을 촬영하여 약 정보를 인식합니다."
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "약 포장지나 낱알 사진을 선택하여 약 정보를 인식합니다."
-        }
-      ],
       [
         "expo-splash-screen",
         {
