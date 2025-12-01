@@ -19,18 +19,22 @@ const LeftSection = styled.View`
 `;
 
 const LogoContainer = styled.View`
-  padding: 2px;
+  justify-content: center;
+  align-items: center;
 `;
 
 const LogoText = styled.Text`
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 700;
   color: #000;
   margin-left: 10px;
+  line-height: 25px;
 `;
 
 const ListButton = styled.TouchableOpacity`
   padding: 4px;
+  justify-content: center;
+  align-items: center;
 `;
 
 export default function AppHeader() {
