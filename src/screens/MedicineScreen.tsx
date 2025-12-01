@@ -3,7 +3,7 @@ import SunSvg from "@/assets/icons/Sun.svg";
 import SunHorizonSvg from "@/assets/icons/SunHorizon.svg";
 import VectorSvg from "@/assets/icons/Vector.svg";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView } from "react-native";
 import styled from "styled-components/native";
 import { api } from "../services/api";
@@ -36,7 +36,7 @@ const TimeFilterButton = styled.TouchableOpacity<{ isActive: boolean }>`
 `;
 
 const TimeFilterText = styled.Text<{ isActive: boolean }>`
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 600;
   color: ${(props) => (props.isActive ? "#fff" : "#9b9b9b")};
 `;
@@ -45,6 +45,7 @@ const ContentArea = styled.View`
   flex: 1;
   background-color: #f5f5f5;
   padding: 16px;
+  min-height: 100%;
 `;
 
 const MedicineCard = styled.View`
@@ -235,14 +236,14 @@ export default function MedicineScreen() {
     );
   });
 
-  const handleDetailPress = (medicineId: string) => {
+  const handleDetailPress = useCallback((medicineId: string) => {
     router.push({
       pathname: "/drug-risk-analysis",
       params: {
         medicineId,
       },
     });
-  };
+  }, [router]);
 
   return (
     <Container>
@@ -255,7 +256,12 @@ export default function MedicineScreen() {
           isActive={activeFilter === "morning"}
           onPress={() => setActiveFilter("morning")}
         >
-          <SunHorizonSvg width={16} height={16} />
+          <SunHorizonSvg 
+            width={20} 
+            height={20} 
+            fill={activeFilter === "morning" ? "#ffffff" : "#9b9b9b"}
+            color={activeFilter === "morning" ? "#ffffff" : "#9b9b9b"}
+          />
           <TimeFilterText isActive={activeFilter === "morning"}>
             아침
           </TimeFilterText>
@@ -265,7 +271,12 @@ export default function MedicineScreen() {
           isActive={activeFilter === "lunch"}
           onPress={() => setActiveFilter("lunch")}
         >
-          <SunSvg width={16} height={16} />
+          <SunSvg 
+            width={20} 
+            height={20} 
+            fill={activeFilter === "lunch" ? "#ffffff" : "#9b9b9b"}
+            color={activeFilter === "lunch" ? "#ffffff" : "#9b9b9b"}
+          />
           <TimeFilterText isActive={activeFilter === "lunch"}>
             점심
           </TimeFilterText>
@@ -275,14 +286,19 @@ export default function MedicineScreen() {
           isActive={activeFilter === "dinner"}
           onPress={() => setActiveFilter("dinner")}
         >
-          <MoonSvg width={16} height={16} />
+          <MoonSvg 
+            width={20} 
+            height={20} 
+            fill={activeFilter === "dinner" ? "#ffffff" : "#9b9b9b"}
+            color={activeFilter === "dinner" ? "#ffffff" : "#9b9b9b"}
+          />
           <TimeFilterText isActive={activeFilter === "dinner"}>
             저녁
           </TimeFilterText>
         </TimeFilterButton>
       </TimeFilterContainer>
 
-      <ScrollView>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <ContentArea>
           {loading ? (
             <LoadingContainer>

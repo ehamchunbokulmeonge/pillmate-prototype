@@ -60,6 +60,22 @@ export const api = {
     return response.json();
   },
 
+  // 약물 상세 조회
+  async getMedicineDetail(medicineId: string) {
+    const response = await fetch(`${API_BASE_URL}/api/v1/medicines/${medicineId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("약물 상세 조회에 실패했습니다.");
+    }
+
+    return response.json();
+  },
+
   // 새 약물 추가 시 분석 요청 (저장된 약물들과 함께 분석)
   async analyzeMedicineWithExisting(newMedicine: {
     name: string;

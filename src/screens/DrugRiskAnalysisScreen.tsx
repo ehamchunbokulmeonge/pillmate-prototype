@@ -59,23 +59,103 @@ const DrugRiskAnalysisScreen = ({
 
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [medicineDetail, setMedicineDetail] = useState<any>(null);
   const maxScore = 10;
 
   // 약 페이지에서 온 경우 (medicineId가 있으면) 버튼 숨김
   const isFromMedicinePage = !!medicineId;
 
-  // 기본값 설정
-  const scannedMedication = data?.scannedMedication || {
-    name: "타이레놀 500mg",
-    ingredient: "아세트아미노펜",
-    amount: "500mg",
+  // medicineId가 있으면 API 호출
+  React.useEffect(() => {
+    if (medicineId) {
+      fetchMedicineDetail();
+    }
+  }, [medicineId]);
+
+  const fetchMedicineDetail = async () => {
+    if (!medicineId) return;
+    
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/v1/medicines/${medicineId}`);
+      
+      if (!response.ok) {
+        throw new Error("약물 상세 조회 실패");
+      }
+      
+      const detail = await response.json();
+      console.log("=== 약물 상세 조회 응답 ===");
+      console.log("전체 detail:", JSON.stringify(detail, null, 2));
+      console.log("scan_report 타입:", typeof detail.scan_report);
+      console.log("scan_report 내용:", detail.scan_report);
+      
+      // scan_report가 있으면 그 내용을 사용
+      if (detail.scan_report) {
+        let reportData;
+        try {
+          reportData = typeof detail.scan_report === 'string' 
+            ? JSON.parse(detail.scan_report) 
+            : detail.scan_report;
+          
+          console.log("=== 파싱된 scan_report ===");
+          console.log("reportData:", JSON.stringify(reportData, null, 2));
+          console.log("overallRiskScore:", reportData.overallRiskScore);
+          console.log("riskLevel:", reportData.riskLevel);
+          console.log("riskItems:", reportData.riskItems);
+          console.log("warnings:", reportData.warnings);
+        } catch (parseError) {
+          console.error("scan_report 파싱 에러:", parseError);
+          reportData = {};
+        }
+        
+        // API 응답 필드명을 화면에서 사용하는 필드명으로 매핑
+        const mergedData = {
+          ...reportData,
+          // 필드명 매핑
+          overallRiskScore: reportData.risk_score ?? reportData.overallRiskScore ?? 0,
+          riskLevel: reportData.risk_level || reportData.riskLevel || "low",
+          riskItems: reportData.interactions || reportData.riskItems || [],
+          warnings: reportData.warnings || [],
+          summary: reportData.summary || "",
+          sections: reportData.sections || [],
+          recommendations: reportData.recommendations || [],
+          scannedMedication: reportData.scannedMedication || {
+            name: detail.name,
+            ingredient: detail.ingredient,
+            amount: detail.amount,
+          }
+        };
+        
+        console.log("=== 최종 병합된 데이터 ===");
+        console.log(JSON.stringify(mergedData, null, 2));
+        
+        setMedicineDetail(mergedData);
+      } else {
+        console.log("scan_report 없음");
+        setMedicineDetail(detail);
+      }
+    } catch (error) {
+      console.error("약물 상세 조회 에러:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
-  const overallRiskScore = data?.overallRiskScore ?? 8;
-  const riskLevel = data?.riskLevel || "high";
-  const riskItems = data?.riskItems || [];
-  const warnings = data?.warnings || [];
-  const summary = data?.summary || "";
-  const sections = data?.sections || [];
+
+  // medicineDetail이 있으면 그것을 사용, 없으면 data 사용
+  const displayData = medicineDetail || data;
+
+  // 기본값 설정
+  const scannedMedication = displayData?.scannedMedication || {
+    name: displayData?.name || "",
+    ingredient: displayData?.ingredient || "",
+    amount: displayData?.amount || "",
+  };
+  const overallRiskScore = displayData?.overallRiskScore ?? 0;
+  const riskLevel = displayData?.riskLevel || "low";
+  const riskItems = displayData?.riskItems || [];
+  const warnings = displayData?.warnings || [];
+  const summary = displayData?.summary || "";
+  const sections = displayData?.sections || [];
 
   console.log("사용할 데이터:", {
     scannedMedication,
