@@ -1,5 +1,6 @@
 import { ChatIcon, ClockIcon, HomeIcon, PillIcon } from "@/assets/icons/index";
 import { Href, router, usePathname } from "expo-router";
+import { JSX } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styled from "styled-components/native";
 
@@ -7,12 +8,6 @@ const TabBarContainer = styled.View<{ bottomInset: number }>`
   flex-direction: row;
   background-color: #fff;
   border-top-width: 0;
-  shadow-color: #9b9b9b;
-  shadow-offset-width: 0px;
-  shadow-offset-height: -2px;
-  shadow-opacity: 0.2;
-  shadow-radius: 6px;
-  elevation: 8;
   height: ${(props) => 74 + props.bottomInset}px;
   padding-top: 16px;
   padding-bottom: ${(props) => 12 + props.bottomInset}px;
