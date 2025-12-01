@@ -11,8 +11,8 @@ const TabBarContainer = styled.View<{ bottomInset: number }>`
   height: ${(props) => 74 + props.bottomInset}px;
   padding-top: 16px;
   padding-bottom: ${(props) => 12 + props.bottomInset}px;
-  padding-left: 24px;
-  padding-right: 24px;
+  padding-left: 40px;
+  padding-right: 40px;
   gap: 8px;
 `;
 
