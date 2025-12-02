@@ -8,6 +8,8 @@ PillMate는 사용자가 약 패키지를 스마트폰으로 촬영하면 AI가 
 ### 👇프로젝트 문서👇
 ### [\[애햄춘복울멍이\]PillMate기획서.pdf](https://github.com/user-attachments/files/23640042/PillMate.pdf)
 
+### 👇PillMate 서버 깃허브👇
+### [PillMate서버깃허브](https://github.com/ehamchunbokulmeonge/pillmate-server)
 -----
 
 ## 1\. 프로젝트 개요
