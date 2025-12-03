@@ -342,7 +342,7 @@ const ChatRoomScreen = () => {
           <Ionicons name="chevron-back" size={28} color={Colors.black2} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>AI 약사</Text>
+          <Text style={styles.headerTitle}>AI 다제 약물 관리 도우미</Text>
           <Text style={styles.headerSubtitle}>전문 약학 상담</Text>
         </View>
         <TouchableOpacity style={styles.menuButton}>
