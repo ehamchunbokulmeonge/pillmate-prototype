@@ -93,18 +93,29 @@ export default function CameraScreen() {
       const result = await response.json();
       console.log("=== API 응답 결과 ===");
       console.log("Result:", JSON.stringify(result, null, 2));
+      console.log("Result keys:", Object.keys(result));
+      console.log("Result.scannedMedication:", result.scannedMedication);
 
       // 결과 화면으로 이동
       console.log("결과 화면으로 이동 시작");
-      router.push({
-        pathname: "/drug-risk-analysis",
-        params: {
-          data: JSON.stringify(result),
-        },
-      });
-      console.log("결과 화면 이동 완료");
+      
+      try {
+        router.push({
+          pathname: "/drug-risk-analysis",
+          params: {
+            data: JSON.stringify(result),
+          },
+        });
+        console.log("결과 화면 이동 성공");
+      } catch (routerError) {
+        console.error("=== 라우팅 에러 ===", routerError);
+        throw routerError;
+      }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("=== 전체 에러 ===");
+      console.error("Error type:", error instanceof Error ? error.constructor.name : typeof error);
+      console.error("Error message:", error instanceof Error ? error.message : String(error));
+      console.error("Error stack:", error instanceof Error ? error.stack : "No stack");
       Alert.alert("오류", "약물 분석에 실패했습니다. 다시 시도해주세요.", [
         { text: "확인" },
       ]);

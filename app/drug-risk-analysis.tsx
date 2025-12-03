@@ -10,10 +10,17 @@ export default function DrugRiskAnalysisRoute() {
   console.log("params.data type:", typeof params.data);
   console.log("params.data:", params.data);
 
-  const data = params.data ? JSON.parse(params.data as string) : null;
-  const medicineId = params.medicineId as string | undefined;
-  console.log("Parsed data:", JSON.stringify(data, null, 2));
-  console.log("MedicineId:", medicineId);
+  try {
+    const data = params.data ? JSON.parse(params.data as string) : null;
+    const medicineId = params.medicineId as string | undefined;
+    console.log("Parsed data:", JSON.stringify(data, null, 2));
+    console.log("MedicineId:", medicineId);
 
-  return <DrugRiskAnalysisScreen data={data} medicineId={medicineId} />;
+    return <DrugRiskAnalysisScreen data={data} medicineId={medicineId} />;
+  } catch (error) {
+    console.error("=== DrugRiskAnalysisRoute 파싱 에러 ===");
+    console.error("Error:", error);
+    console.error("Raw params.data:", params.data);
+    return <DrugRiskAnalysisScreen data={null} medicineId={undefined} />;
+  }
 }
