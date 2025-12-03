@@ -1,6 +1,4 @@
-import Arrow1Svg from "@/assets/icons/arrow1.svg";
 import HardDrivesSvg from "@/assets/icons/HardDrives.svg";
-import PlusSvg from "@/assets/icons/plus.svg";
 import RingSvg from "@/assets/icons/ring.svg";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -183,7 +181,11 @@ const AddMedicineReminderScreen = ({
           {/* 안내 카드 */}
           <View style={styles.infoCard}>
             <View style={styles.infoIconContainer}>
-              <Ionicons name="information-circle" size={24} color={Colors.second} />
+              <Ionicons
+                name="information-circle"
+                size={24}
+                color={Colors.second}
+              />
             </View>
             <View style={styles.infoTextContainer}>
               <Text style={styles.infoTitle}>복용 알림 설정</Text>
@@ -227,14 +229,22 @@ const AddMedicineReminderScreen = ({
                 onPress={() => setShowCountPicker(true)}
               >
                 <View style={styles.counterIconWrapper}>
-                  <Ionicons name="remove-circle-outline" size={28} color={Colors.gray3} />
+                  <Ionicons
+                    name="remove-circle-outline"
+                    size={28}
+                    color={Colors.gray3}
+                  />
                 </View>
                 <View style={styles.counterContent}>
                   <Text style={styles.counterValue}>{count}</Text>
                   <Text style={styles.counterUnit}>개</Text>
                 </View>
                 <View style={styles.counterIconWrapper}>
-                  <Ionicons name="add-circle-outline" size={28} color={Colors.second} />
+                  <Ionicons
+                    name="add-circle-outline"
+                    size={28}
+                    color={Colors.second}
+                  />
                 </View>
               </TouchableOpacity>
             </View>
@@ -250,14 +260,22 @@ const AddMedicineReminderScreen = ({
                 onPress={() => setShowDurationPicker(true)}
               >
                 <View style={styles.counterIconWrapper}>
-                  <Ionicons name="remove-circle-outline" size={28} color={Colors.gray3} />
+                  <Ionicons
+                    name="remove-circle-outline"
+                    size={28}
+                    color={Colors.gray3}
+                  />
                 </View>
                 <View style={styles.counterContent}>
                   <Text style={styles.counterValue}>{duration}</Text>
                   <Text style={styles.counterUnit}>일</Text>
                 </View>
                 <View style={styles.counterIconWrapper}>
-                  <Ionicons name="add-circle-outline" size={28} color={Colors.second} />
+                  <Ionicons
+                    name="add-circle-outline"
+                    size={28}
+                    color={Colors.second}
+                  />
                 </View>
               </TouchableOpacity>
             </View>
@@ -280,12 +298,16 @@ const AddMedicineReminderScreen = ({
                   </View>
                   <View style={styles.timeInfoContainer}>
                     <Text style={styles.timeLabel}>{index + 1}회차</Text>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={styles.timeValueContainer}
                       onPress={() => handleTimePress(index)}
                     >
                       <Text style={styles.timeText}>{time}</Text>
-                      <Ionicons name="chevron-down" size={20} color={Colors.gray2} />
+                      <Ionicons
+                        name="chevron-down"
+                        size={20}
+                        color={Colors.gray2}
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -297,7 +319,11 @@ const AddMedicineReminderScreen = ({
                       setTimes(newTimes);
                     }}
                   >
-                    <Ionicons name="trash-outline" size={20} color={Colors.error} />
+                    <Ionicons
+                      name="trash-outline"
+                      size={20}
+                      color={Colors.error}
+                    />
                   </TouchableOpacity>
                 )}
               </View>
