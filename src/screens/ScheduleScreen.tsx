@@ -90,7 +90,7 @@ const ScheduleScreen = () => {
   };
 
   const handleCompleteSchedule = (scheduleId: number) => {
-    setCompletedSchedules(prev => new Set(prev).add(scheduleId));
+    setCompletedSchedules((prev) => new Set(prev).add(scheduleId));
     // 선택 해제
     setSelectedScheduleId(null);
     setSelectedDetail(null);
@@ -126,7 +126,8 @@ const ScheduleScreen = () => {
 
   const completedCount = completedSchedules.size;
   const totalCount = schedules.length;
-  const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+  const progressPercentage =
+    totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   return (
     <View style={styles.container}>
@@ -145,7 +146,11 @@ const ScheduleScreen = () => {
           <View style={styles.progressCard}>
             <View style={styles.progressHeader}>
               <View style={styles.progressInfo}>
-                <Ionicons name="checkmark-circle" size={24} color={Colors.second} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={24}
+                  color={Colors.second}
+                />
                 <View style={styles.progressTextContainer}>
                   <Text style={styles.progressTitle}>복용 진행률</Text>
                   <Text style={styles.progressCount}>
@@ -153,10 +158,17 @@ const ScheduleScreen = () => {
                   </Text>
                 </View>
               </View>
-              <Text style={styles.progressPercentage}>{Math.round(progressPercentage)}%</Text>
+              <Text style={styles.progressPercentage}>
+                {Math.round(progressPercentage)}%
+              </Text>
             </View>
             <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, { width: `${progressPercentage}%` }]} />
+              <View
+                style={[
+                  styles.progressBar,
+                  { width: `${progressPercentage}%` },
+                ]}
+              />
             </View>
           </View>
         )}
@@ -196,7 +208,6 @@ const ScheduleScreen = () => {
                 <View key={schedule.id} style={styles.timelineItem}>
                   {/* Timeline Marker */}
                   <View style={styles.timelineMarker}>
-
                     <Svg width="25" height="25" style={styles.circleSvg}>
                       {isCompleted ? (
                         <>
@@ -253,14 +264,22 @@ const ScheduleScreen = () => {
                           </Text>
                         </View>
                         <View style={styles.timeContainer}>
-                          <Ionicons name="time-outline" size={16} color="#9B9B9B" />
+                          <Ionicons
+                            name="time-outline"
+                            size={16}
+                            color="#9B9B9B"
+                          />
                           <Text style={styles.medicineTime}>
                             {formatTime(schedule.dose_time)}
                           </Text>
                         </View>
                       </View>
                       <View style={styles.dosageContainer}>
-                        <Ionicons name="water-outline" size={14} color="#9B9B9B" />
+                        <Ionicons
+                          name="water-outline"
+                          size={14}
+                          color="#9B9B9B"
+                        />
                         <Text style={styles.medicineDosage}>
                           {schedule.dose_count}정 복용
                         </Text>
@@ -271,7 +290,11 @@ const ScheduleScreen = () => {
                         <View style={styles.detailContainer}>
                           <View style={styles.detailRow}>
                             <View style={styles.detailLabelContainer}>
-                              <Ionicons name="play-circle-outline" size={16} color="#5D5D5D" />
+                              <Ionicons
+                                name="play-circle-outline"
+                                size={16}
+                                color="#5D5D5D"
+                              />
                               <Text style={styles.detailLabel}>시작일</Text>
                             </View>
                             <Text style={styles.detailValue}>
@@ -280,19 +303,29 @@ const ScheduleScreen = () => {
                           </View>
                           <View style={styles.detailRow}>
                             <View style={styles.detailLabelContainer}>
-                              <Ionicons name="stop-circle-outline" size={16} color="#5D5D5D" />
+                              <Ionicons
+                                name="stop-circle-outline"
+                                size={16}
+                                color="#5D5D5D"
+                              />
                               <Text style={styles.detailLabel}>종료일</Text>
                             </View>
                             <Text style={styles.detailValue}>
                               {formatDate(selectedDetail.end_date)}
                             </Text>
                           </View>
-                          <TouchableOpacity 
+                          <TouchableOpacity
                             style={styles.completeButton}
                             onPress={() => handleCompleteSchedule(schedule.id)}
                           >
-                            <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
-                            <Text style={styles.completeButtonText}>복용 완료</Text>
+                            <Ionicons
+                              name="checkmark-circle"
+                              size={20}
+                              color="#FFFFFF"
+                            />
+                            <Text style={styles.completeButtonText}>
+                              복용 완료
+                            </Text>
                           </TouchableOpacity>
                         </View>
                       )}
